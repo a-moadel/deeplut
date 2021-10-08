@@ -2,3 +2,6 @@ pre-commit
 flake8
 black
 mypy
+torch
+torchvision
+numpy
