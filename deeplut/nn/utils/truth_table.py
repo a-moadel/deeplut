@@ -1,13 +1,12 @@
+import torch
+import math
+import numpy as np
+import bisect
+import random
+import itertools
+import copy
 
-def generate_truth_table(k, in_size, out_size, device, minimal):
-    if minimal:
-      tables_count = math.ceil(in_size/k)
-    else:
-      tables_count = in_size
-    table = torch.from_numpy(np.array(list(itertools.product([-1, 1], repeat=k)))).T
-    return torch.vstack([table] * tables_count * out_size).to(device)
-
-def generate_truth_table_generic(k, tables_count, device):
+def generate_truth_table(k, tables_count, device) -> torch.Tensor:
     table = torch.from_numpy(np.array(list(itertools.product([-1, 1], repeat=k)))).T
     return torch.vstack([table] * tables_count).to(device)
 
