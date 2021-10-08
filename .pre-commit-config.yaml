@@ -9,20 +9,20 @@ repos:
     hooks:
       - id: mypy
         name: mypy_deeplut
-        files: deeplut/*
+        files: deeplut*
       - id: mypy
         name: mypy_tests
-        files: tests/*
+        files: tests*
   - repo: https://gitlab.com/pycqa/flake8
     rev: 3.8.3
     hooks:
       - id: flake8
         name: flake8_deeplut
-        files: deeplut/*
+        files: deeplut*
         additional_dependencies:
           - flake8-print==3.1.4
       - id: flake8
         name: flake8_tests
-        files: tests/*
+        files: tests*
         additional_dependencies:
           - flake8-print==3.1.4
