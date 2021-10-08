@@ -6,7 +6,7 @@ from deeplut.nn.utils import *
 
 class TestTruthTableGeneration(unittest.TestCase):
 
-    def test_basic_scenario(self):
+    def test_basic_scenario_k_2(self):
         actual = generate_truth_table(2,3,'cpu')
         
         expected = torch.from_numpy(np.array([[-1,-1,1,1],[-1,1,-1,1],
@@ -15,6 +15,18 @@ class TestTruthTableGeneration(unittest.TestCase):
         equal_result = torch.eq(actual, expected)
         self.assertTrue(torch.all(equal_result))
 
+    def test_basic_scenario_k_3(self):
+        actual = generate_truth_table(3,2,'cpu')
+        
+        expected = torch.from_numpy(np.array([[-1,-1,-1,-1,1,1,1,1],
+                                              [-1,-1,1,1,-1,-1,1,1],
+                                              [-1,1,-1,1,-1,1,-1,1],
+                                              
+                                              [-1,-1,-1,-1,1,1,1,1],
+                                              [-1,-1,1,1,-1,-1,1,1],
+                                              [-1,1,-1,1,-1,1,-1,1]]))
+        equal_result = torch.eq(actual, expected)
+        self.assertTrue(torch.all(equal_result))
 
     def test_odd_scenario_k_0(self):
         actual = generate_truth_table(0,3,'cpu')
