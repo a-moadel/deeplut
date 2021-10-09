@@ -2,7 +2,7 @@ import unittest
 import deeplut
 import torch
 import numpy as np
-from deeplut.nn.utils import *
+from deeplut.nn.utils import generate_truth_table,reduce_truth_table
 
 class TestTruthTableGeneration(unittest.TestCase):
 
@@ -51,5 +51,32 @@ class TestTruthTableGeneration(unittest.TestCase):
         with self.assertRaises(TypeError):
             actual = generate_truth_table(tables_count=1,device='cpu')
 
+
+class TestReduceTruthTable(unittest.TestCase):
+    
+    def test_reduce_2d_table_k_2_all_ones(self):
+        k = 2
+        table = torch.from_numpy(np.array([[-1,-1,1,1],[-1,1,-1,1],
+                                           [-1,-1,1,1],[-1,1,-1,1],
+                                           [-1,-1,1,1],[-1,1,-1,1]]))
+        actual = reduce_truth_table(2,table,'cpu')       
+        expected = torch.from_numpy(np.array([[1,-1,-1,1],
+                                              [1,-1,-1,1],
+                                              [1,-1,-1,1]]))
+        equal_result = torch.eq(actual, expected)
+        self.assertTrue(torch.all(equal_result)) 
+
+    def test_reduce_2d_table_k_2_arbitrary_numbers(self):
+        k = 2
+        table = torch.from_numpy(np.array([[-1,-2,3,4],[-5,6,-7,8],
+                                           [-9,-10,11,12],[-13,14,-15,16],
+                                           [-17,-18,19,20],[-21,22,-23,24]]))
+        actual = reduce_truth_table(2,table,'cpu')       
+        expected = torch.from_numpy(np.array([[-1*-5,-2*6,3*-7,4*8],
+                                              [-9*-13,-10*14,11*-15,12*16],
+                                              [-17*-21,-18*22,19*-23,20*24]]))
+        equal_result = torch.eq(actual, expected)
+        self.assertTrue(torch.all(equal_result))  
+            
 if __name__ == '__main__':
     unittest.main()

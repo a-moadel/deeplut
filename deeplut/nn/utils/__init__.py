@@ -1,3 +1,4 @@
 from .truth_table import (
-    generate_truth_table
+    generate_truth_table,
+    reduce_truth_table
 )
