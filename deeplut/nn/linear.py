@@ -1,3 +1,8 @@
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from deeplut.nn.utils import * 
+
 class Linear(torch.nn.Linear):
     def __init__(self, in_features, out_features, binarize_input, k, minimal, binarized_calculation, device):
         real_in_features = in_features * (2 ** k)

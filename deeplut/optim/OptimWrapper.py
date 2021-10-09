@@ -3,10 +3,10 @@ import torch
 
 class OptimWrapper():
 
-    optimizer: Final[torch.Optimizer]
+    optimizer: Final[torch.optim.Optimizer]
     BinaryOptim: [bool]
 
-    def __init__(self,  optimizer: torch.Optimizer, BinaryOptim: bool = False):
+    def __init__(self,  optimizer: torch.optim.Optimizer, BinaryOptim: bool = False):
         self.optimizer = optimizer
         self.BinaryOptim = BinaryOptim
 

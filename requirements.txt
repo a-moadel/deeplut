@@ -5,3 +5,4 @@ mypy
 torch
 torchvision
 numpy
+pdoc
