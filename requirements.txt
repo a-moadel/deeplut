@@ -6,3 +6,4 @@ torch
 torchvision
 numpy
 pdoc
+coverage
