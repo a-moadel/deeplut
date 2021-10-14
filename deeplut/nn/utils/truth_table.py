@@ -41,29 +41,3 @@ def reduce_truth_table(k: int, table: torch.Tensor, device: str) -> torch.Tensor
         result = result * table[...,i::k,:]
     return result.to(device)
 
-def generate_input_mask_expanded(k, in_size, out_size, device):
-    expand_mask = torch.zeros((out_size * in_size * k, 1), dtype=torch.int64).to(device)
-    for j in range(out_size):
-        for i in range(in_size):
-            _from = torch.arange(k) + (i * k) + (j * in_size * k)
-            _to = generate_random(in_size, i, k - 1, device).reshape(-1, 1)
-            expand_mask[_from] = _to
-    return expand_mask
-
-def generate_input_mask_minimal(k, in_size, out_size, device):
-    tables_count = math.ceil(in_size/k)
-    expand_mask = torch.from_numpy(np.arange(tables_count*k*out_size)%in_size).to(device)
-    return expand_mask
-
-def generate_input_mask_shallow(k, in_size, number_of_tables, device):
-    expanded_mask_size = number_of_tables * k
-    result = np.random.choice(in_size, expanded_mask_size)
-    return torch.from_numpy(result).long().to(device)
-
-
-def generate_input_mask(k, in_size, out_size, device, minimal):
-  if minimal:
-    return generate_input_mask_minimal(k, in_size, out_size, device)
-  else:
-    return generate_input_mask_expanded(k, in_size, out_size, device)
-

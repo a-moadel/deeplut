@@ -1,50 +1,26 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from deeplut.nn.utils import * 
+from deeplut.nn import LagrangeBase
+from typing import Final
 
-class Linear(torch.nn.Linear):
-    def __init__(self, in_features, out_features, binarize_input, k, minimal, binarized_calculation, device):
-        real_in_features = in_features * (2 ** k)
-        if minimal:
-          tables_count = math.ceil(in_features/k)
-          real_in_features = tables_count * (2 ** k)
-        super(Linear, self).__init__(real_in_features, out_features)
-        self.binarize_input = binarize_input
-        self.k = k
-        self.device = device
-        self.input_mask = generate_input_mask(k, in_features, out_features, device, minimal)
-        self.truth_table = generate_truth_table(k, in_features, out_features, device, minimal)
-        self.binarized_calculation = binarized_calculation
-        self.minimal = minimal
 
-    def forward(self, input):
-        if self.binarize_input:
-            input.data = torch.sign(input.data)
-        if not hasattr(self.weight, "org"):
-            self.weight.org = self.weight.data.clone()
-        self.weight.data = torch.sign(self.weight.org)
-        expanded_input = input[:, self.input_mask]
-        if self.minimal: 
-          expanded_input=expanded_input.unsqueeze(-1)
-        sum_input_table = expanded_input + self.truth_table
-        if self.binarized_calculation:
-          sum_input_table.data = torch.sign(sum_input_table.data)
-        reduced_input = reduce_truth_table(self.k, sum_input_table, self.device)
-        reduced_input = reduced_input.reshape(
-            reduced_input.shape[0], self.out_features, -1
-        )
-        if self.binarized_calculation:
-          reduced_input.data = torch.sign(reduced_input.data)
-        reduced_input = reduced_input * self.weight
+class Linear(deeplut.nn.LagrangeBase):
+    input_mask: Final[torch.tensor]
+    tables_count: Final[int]
 
-        if self.binarized_calculation:
-          reduced_input.data = torch.sign(reduced_input.data)
+    def __init__(self, in_features: int, out_features: int, k: int, binary_calculations: bool, device: str):
+        self.tables_count = in_features * out_features
+        self.input_mask = self._input_mask_builder(k, in_features)
+        super(Linear, self).__init__(
+            tables_count, k, binary_calculations, device)
 
-        out = reduced_input.sum(dim=-1)
-        if self.binarized_calculation:
-           out.data = torch.sign(out.data)
-        if not self.bias is None:
-            self.bias.org = self.bias.data.clone()
-            out += self.bias.view(1, -1).expand_as(out)
-        return out
+    def _input_mask_builder(self, k: int, input_size: int):
+        input_mask = torch.randint(0, input_size, (self.tables_count*k,))
+        input_mask[::k] = torch.range(0, self.tables_count-1)
+        input_mask[::k] %= input_size
+        return input_mask
+
+    def forward(self, input: Tensor.torch):
+        expanded_input = input[:, input_mask]
+        return super().forward(input)

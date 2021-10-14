@@ -13,4 +13,4 @@ Contents:
 A Python library that aims to provide a flexible, extendible, lightening fast, and easy-to-use framework to train look-up tables (LUT) deep neural networks from scratch.
 
 ## Why DeepLut is needed?
-We believe having a flexible, extendible, fast, and easy framework will help in advancing the research in this area. Frameworks enable innovation and make researchers focus on experimentation. Extendible will help in building an ecosystem between researchers to add plugins and implement innovative modules to benefit all other researchers. 
+We believe having a flexible, extendible, fast, and easy framework will help in advancing the research in this area. Frameworks enable innovation and make researchers focus on experimentation. Extendible will help in building an ecosystem between researchers to add plugins and implement innovative modules to benefit all other researchers.
