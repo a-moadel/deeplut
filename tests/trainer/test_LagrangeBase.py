@@ -3,33 +3,33 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import Final
 import numpy as np
-from deeplut.nn import LagrangeBase
+from deeplut.trainer import LagrangeTrainer
 import unittest
 
-class test_LagrangeBase(unittest.TestCase):
+class test_LagrangeTrainer(unittest.TestCase):
     
     def test_forward_two_tables_one_input_k_2(self):
-        lagrangeBase = LagrangeBase(tables_count=2, k=2, binary_calculations=False, device='cpu')
+        lagrangeTrainer = LagrangeTrainer(tables_count=2, k=2, binary_calculations=False, device='cpu')
         image = np.array([1,2,3,4])
         input = torch.from_numpy(np.array([[1,2,3,4]]))
-        lagrangeBase.weight.data = torch.from_numpy(np.array([[5,6,7,8],[9,10,11,12]])).float()
+        lagrangeTrainer.weight.data = torch.from_numpy(np.array([[5,6,7,8],[9,10,11,12]])).float()
         output_0 = self.lagrange_calcs_k_2([5,6,7,8],[1,2])
         output_1 = self.lagrange_calcs_k_2([9,10,11,12],[3,4])
-        output = lagrangeBase(input)
+        output = lagrangeTrainer(input)
         self.assertTrue((np.array([output_0,output_1]) == output.data.numpy()).all())
 
     def test_forward_two_tables_two_input_k_2(self):
-        lagrangeBase = LagrangeBase(tables_count=2, k=2, binary_calculations=False, device='cpu')
+        lagrangeTrainer = LagrangeTrainer(tables_count=2, k=2, binary_calculations=False, device='cpu')
         image = np.array([1,2,3,4])
         input = torch.from_numpy(np.array([[1,2,3,4],[1,2,3,4]]))
-        lagrangeBase.weight.data = torch.from_numpy(np.array([[5,6,7,8],[9,10,11,12]])).float()
+        lagrangeTrainer.weight.data = torch.from_numpy(np.array([[5,6,7,8],[9,10,11,12]])).float()
         output_0 = self.lagrange_calcs_k_2([5,6,7,8],[1,2])
         output_1 = self.lagrange_calcs_k_2([9,10,11,12],[3,4])
-        output = lagrangeBase(input)
+        output = lagrangeTrainer(input)
         self.assertTrue((np.array([[output_0,output_1],[output_0,output_1]]) == output.data.numpy()).all())
 
     def test_forward_two_tables_one_input_k_3(self):
-        lagrangeBase = LagrangeBase(tables_count=2, k=3, binary_calculations=False, device='cpu')
+        lagrangeTrainer = LagrangeTrainer(tables_count=2, k=3, binary_calculations=False, device='cpu')
         table1_ins = [1,2,3]
         table2_ins = [4,5,6]
         input = np.array(table1_ins + table2_ins)
@@ -38,10 +38,10 @@ class test_LagrangeBase(unittest.TestCase):
         tabel1_weights = [5,6,7,8,9,10,11,12]
         tabel2_weights = [13,14,15,16,17,18,19,20]
         
-        lagrangeBase.weight.data = torch.from_numpy(np.array([tabel1_weights,tabel2_weights])).float()
+        lagrangeTrainer.weight.data = torch.from_numpy(np.array([tabel1_weights,tabel2_weights])).float()
         output_0 = self.lagrange_calcs_k_3(tabel1_weights,table1_ins)
         output_1 = self.lagrange_calcs_k_3(tabel2_weights,table2_ins)
-        output = lagrangeBase(inputs)
+        output = lagrangeTrainer(inputs)
         self.assertTrue((np.array([output_0,output_1]) == output.data.numpy()).all())    
     
     def test_random_large_test_seeded_k_2(self):
@@ -63,11 +63,11 @@ class test_LagrangeBase(unittest.TestCase):
                 inputs_list.append(list(np.random.rand(input_size,)))
             inputs = torch.from_numpy(np.array(inputs_list))
             
-            lagrangeBase = LagrangeBase(tables_count=table_count, k=k, binary_calculations=False, device='cpu')
+            lagrangeTrainer = LagrangeTrainer(tables_count=table_count, k=k, binary_calculations=False, device='cpu')
             
             weights_list = []
             for id in range(table_count):
-                weights_list.append(list(lagrangeBase.weight[id].detach().numpy()))
+                weights_list.append(list(lagrangeTrainer.weight[id].detach().numpy()))
             
             outputs = []
             
@@ -79,7 +79,7 @@ class test_LagrangeBase(unittest.TestCase):
                     result.append(self.lagrange_calcs(weights_list[idw],inputs[id,start:end],k))
                 outputs.append(result)
             
-            actual_output = lagrangeBase(inputs)
+            actual_output = lagrangeTrainer(inputs)
             expected_output = np.array(outputs)
             allowed_error = 1e-5
             condition = (actual_output.detach().numpy() - expected_output)<allowed_error
