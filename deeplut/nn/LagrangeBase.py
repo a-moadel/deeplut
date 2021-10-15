@@ -13,9 +13,17 @@ class LagrangeBase(torch.nn.Linear):
     kk: Final[int]
     device: Final[str]
     truth_table: Final[torch.Tensor]
-    binary_calculations: Final[bool]
+    binary_calculations: [bool]
 
     def __init__(self, tables_count: int, k: int, binary_calculations: bool, device: str):
+        """ Lagrange Approximation is using Lagrange interpolation to represent differentiable look-up tables.
+
+        Args:
+            tables_count (int): Number of look up tables to train
+            k (int): numper of inputs of each look up table
+            binary_calculations (bool): whether to force binary calculations - simulate real look up tabls - 
+            device (str): device of the output tensor.
+        """
         self.tables_count = tables_count
         self.k = k
         self.kk = 2 ** k
@@ -25,18 +33,35 @@ class LagrangeBase(torch.nn.Linear):
             self.k, 1, device)
         super(LagrangeBase, self).__init__(in_features = self.kk, out_features = self.tables_count,bias = False)
 
-    def _validate_input(self, input):
+    def _validate_input(self, input: torch.tensor):
+        """ validate inputs dim before passing throw LUTs
+
+        Args:
+            input (torch.tensor): input from forward function.
+
+        Raises:
+            Exception: Invalid input dim
+        """
         _rows_count = input.shape[-1]
         _tbl_count = int(_rows_count/self.k)
         if _rows_count % self.k != 0 or _tbl_count != self.tables_count:
             raise Exception("Invalid input dim")
 
-    def _binarize(self, input: torch.tensor):
+    def _binarize(self, input: torch.tensor) -> torch.tensor:
+        """ binarize input to simulate real LUTs
+
+        Args:
+            input (torch.tensor): Nd tensor
+
+        Returns:
+            [torch.tensor]: Same dimensions as input but all values either -1,1 in case binary_calculations = True.
+        """
         if self.binary_calculations:
             input.data = torch.sign(input.data)
         return input
 
     def forward(self, input: torch.tensor):
+        
         if not hasattr(self.weight, "org"):
             self.weight.org = self.weight.data.clone()
         self._validate_input(input)
