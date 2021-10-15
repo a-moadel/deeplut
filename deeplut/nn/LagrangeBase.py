@@ -45,7 +45,7 @@ class LagrangeBase(torch.nn.Linear):
         input_truth_table = self._binarize(input + self.truth_table)
         
         reduced_table = self._binarize(input_truth_table.prod(dim=-2))
-        reduced_table = reduced_table.view(-1,self.k,self.kk)
+        reduced_table = reduced_table.view(-1,self.tables_count,self.kk)
         
         out = reduced_table * self._binarize(self.weight)
         out = self._binarize(out)

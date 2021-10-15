@@ -8,7 +8,7 @@ import unittest
 
 class test_LagrangeBase(unittest.TestCase):
     
-    def test_forward_two_tables_one_input(self):
+    def test_forward_two_tables_one_input_k_2(self):
         lagrangeBase = LagrangeBase(tables_count=2, k=2, binary_calculations=False, device='cpu')
         image = np.array([1,2,3,4])
         input = torch.from_numpy(np.array([[1,2,3,4]]))
@@ -18,7 +18,7 @@ class test_LagrangeBase(unittest.TestCase):
         output = lagrangeBase(input)
         self.assertTrue((np.array([output_0,output_1]) == output.data.numpy()).all())
 
-    def test_forward_two_tables_two_input(self):
+    def test_forward_two_tables_two_input_k_2(self):
         lagrangeBase = LagrangeBase(tables_count=2, k=2, binary_calculations=False, device='cpu')
         image = np.array([1,2,3,4])
         input = torch.from_numpy(np.array([[1,2,3,4],[1,2,3,4]]))
@@ -28,6 +28,73 @@ class test_LagrangeBase(unittest.TestCase):
         output = lagrangeBase(input)
         self.assertTrue((np.array([[output_0,output_1],[output_0,output_1]]) == output.data.numpy()).all())
 
+    def test_forward_two_tables_one_input_k_3(self):
+        lagrangeBase = LagrangeBase(tables_count=2, k=3, binary_calculations=False, device='cpu')
+        table1_ins = [1,2,3]
+        table2_ins = [4,5,6]
+        input = np.array(table1_ins + table2_ins)
+        inputs = torch.from_numpy(np.array([input]))
+        
+        tabel1_weights = [5,6,7,8,9,10,11,12]
+        tabel2_weights = [13,14,15,16,17,18,19,20]
+        
+        lagrangeBase.weight.data = torch.from_numpy(np.array([tabel1_weights,tabel2_weights])).float()
+        output_0 = self.lagrange_calcs_k_3(tabel1_weights,table1_ins)
+        output_1 = self.lagrange_calcs_k_3(tabel2_weights,table2_ins)
+        output = lagrangeBase(inputs)
+        self.assertTrue((np.array([output_0,output_1]) == output.data.numpy()).all())    
+    
+    def test_random_large_test_seeded_k_2(self):
+        self.random_testing_seeded(k = 2,iterations_count = 20)
+
+    def test_random_large_test_seeded_k_3(self):
+        self.random_testing_seeded(k = 3, iterations_count = 20)
+
+    def random_testing_seeded(self,k,iterations_count):
+        maximum_batch_size = 100
+        maximum_table_count = 200
+        np.random.seed(0)
+        for i in range(iterations_count):
+            batch_size = np.random.randint(maximum_batch_size)+10
+            table_count = np.random.randint(maximum_table_count)+10
+            input_size = table_count*k
+            inputs_list = []
+            for id in range(batch_size):
+                inputs_list.append(list(np.random.rand(input_size,)))
+            inputs = torch.from_numpy(np.array(inputs_list))
+            
+            lagrangeBase = LagrangeBase(tables_count=table_count, k=k, binary_calculations=False, device='cpu')
+            
+            weights_list = []
+            for id in range(table_count):
+                weights_list.append(list(lagrangeBase.weight[id].detach().numpy()))
+            
+            outputs = []
+            
+            for id in range(batch_size): 
+                result = []
+                for idw in range(table_count):
+                    start = idw*k
+                    end = (idw+1)*k
+                    result.append(self.lagrange_calcs(weights_list[idw],inputs[id,start:end],k))
+                outputs.append(result)
+            
+            actual_output = lagrangeBase(inputs)
+            expected_output = np.array(outputs)
+            allowed_error = 1e-5
+            condition = (actual_output.detach().numpy() - expected_output)<allowed_error
+            self.assertTrue(condition.all())    
+
+
+            
+    def lagrange_calcs(self, weights,inputs,k):
+        if k==2:
+            return self.lagrange_calcs_k_2(weights, inputs)
+        elif k==3:
+            return self.lagrange_calcs_k_3(weights, inputs)
+        else:
+            raise Exception("Invalid k")
+    
     def lagrange_calcs_k_2(self, weights,inputs):
         
         return weights[0]*(inputs[0]-1)*(inputs[1]-1) + \
@@ -35,5 +102,17 @@ class test_LagrangeBase(unittest.TestCase):
                weights[2]*(inputs[0]+1)*(inputs[1]-1) + \
                weights[3]*(inputs[0]+1)*(inputs[1]+1)
 
+    def lagrange_calcs_k_3(self, weights,inputs):
+        
+        return weights[0]*(inputs[0]-1)*(inputs[1]-1)*(inputs[2]-1) + \
+               weights[1]*(inputs[0]-1)*(inputs[1]-1)*(inputs[2]+1) + \
+               weights[2]*(inputs[0]-1)*(inputs[1]+1)*(inputs[2]-1) + \
+               weights[3]*(inputs[0]-1)*(inputs[1]+1)*(inputs[2]+1) + \
+               weights[4]*(inputs[0]+1)*(inputs[1]-1)*(inputs[2]-1) + \
+               weights[5]*(inputs[0]+1)*(inputs[1]-1)*(inputs[2]+1) + \
+               weights[6]*(inputs[0]+1)*(inputs[1]+1)*(inputs[2]-1) + \
+               weights[7]*(inputs[0]+1)*(inputs[1]+1)*(inputs[2]+1)
+
+    
 if __name__ == '__main__':
-    unittest.main()
+    tables_count.main()
