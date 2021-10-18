@@ -26,8 +26,8 @@ class LagrangeTrainer(BaseTrainer):
         self.device = device
         self.truth_table = generate_truth_table(k, 1, device)
 
-        super(LagrangeTrainer, self).__init__(in_features=2**k,
-                                              out_features=self.tables_count, k=k, binary_calculations=binary_calculations)
+        super(LagrangeTrainer, self).__init__(tables_count=self.tables_count,
+                                              k=k, binary_calculations=binary_calculations, device=device)
 
     def _validate_input(self, input: torch.tensor):
         """ validate inputs dim before passing throw LUTs

@@ -115,4 +115,4 @@ class test_LagrangeTrainer(unittest.TestCase):
 
     
 if __name__ == '__main__':
-    tables_count.main()
+    unittest.main()
