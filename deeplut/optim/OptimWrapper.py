@@ -1,9 +1,8 @@
-from typing import Final
 import torch
 
 class OptimWrapper():
 
-    optimizer: Final[torch.optim.Optimizer]
+    optimizer: torch.optim.Optimizer
     
     BinaryOptim: [bool]
 

@@ -2,19 +2,18 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from deeplut.trainer import LagrangeTrainer, BaseTrainer
-from typing import Final, Type
 import numpy as np
 
 
 class Linear(torch.nn.Module):
 
-    input_mask: Final[torch.tensor]
-    tables_count: Final[int]
-    in_features: Final[int]
-    out_features: Final[int]
-    trainer: Final[BaseTrainer]
+    input_mask: torch.tensor
+    tables_count: int
+    in_features: int
+    out_features: int
+    trainer: BaseTrainer
 
-    def __init__(self, in_features: int, out_features: int, k: int, binary_calculations: bool, trainer_type: Type[BaseTrainer], bias: bool = True, device: str = None) -> None:
+    def __init__(self, in_features: int, out_features: int, k: int, binary_calculations: bool, trainer_type: BaseTrainer, bias: bool = True, device: str = None) -> None:
         super(Linear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features

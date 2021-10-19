@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Final
 import numpy as np
 from deeplut.nn.utils import generate_truth_table
 from deeplut.trainer import BaseTrainer
@@ -9,9 +8,9 @@ from deeplut.trainer import BaseTrainer
 
 class LagrangeTrainer(BaseTrainer):
 
-    tables_count: Final[int]
-    device: Final[str]
-    truth_table: Final[torch.Tensor]
+    tables_count: int
+    device: str
+    truth_table: torch.Tensor
 
     def __init__(self, tables_count: int, k: int, binary_calculations: bool, device: str):
         """ Lagrange Approximation is using Lagrange interpolation to represent differentiable look-up tables.

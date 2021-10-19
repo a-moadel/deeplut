@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Final
 import numpy as np
 from deeplut.trainer import LagrangeTrainer
 import unittest

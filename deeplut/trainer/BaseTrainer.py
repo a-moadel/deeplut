@@ -1,5 +1,4 @@
 import torch
-from typing import Final
 
 
 class BaseTrainer(torch.nn.Linear):
@@ -7,8 +6,8 @@ class BaseTrainer(torch.nn.Linear):
     """
 
     binary_calculations: [bool]
-    k: Final[int]
-    kk: Final[int]
+    k: int
+    kk: int
 
     def __init__(self, tables_count: int, k: int, binary_calculations: bool, device: str) -> None:
         """ Initalize BaseTrainer common data structure.

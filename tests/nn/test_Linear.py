@@ -1,5 +1,4 @@
 import torch
-from typing import Final
 import numpy as np
 from deeplut.nn import Linear
 from deeplut.trainer import LagrangeTrainer
