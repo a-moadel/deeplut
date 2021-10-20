@@ -40,10 +40,12 @@ class Linear(torch.nn.Module):
 
     def forward(self, input: torch.Tensor):
         assert len(input.shape) == 2
+        batch_size = input.shape[0]
         expanded_input = input[:, self.input_mask]
         output = self.trainer(expanded_input).squeeze()
-        assert output.shape[0] == self.tables_count
-        output = output.view(self.out_features, self.in_features)
+        output = output.view(batch_size,-1)
+        assert output.shape[-1] == self.tables_count
+        output = output.view(batch_size,self.out_features, self.in_features)
         output = output.sum(-1)
         if self.bias != None:
             output = output+self.bias
