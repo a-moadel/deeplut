@@ -1,7 +1,3 @@
-from .BaseTrainer import (
-    BaseTrainer
-)
+from .BaseTrainer import BaseTrainer
 
-from .LagrangeTrainer import (
-    LagrangeTrainer
-)
+from .LagrangeTrainer import LagrangeTrainer

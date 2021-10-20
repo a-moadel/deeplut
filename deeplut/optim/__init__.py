@@ -1,3 +1,1 @@
-from .OptimWrapper import (
-    OptimWrapper
-)
+from .OptimWrapper import OptimWrapper
