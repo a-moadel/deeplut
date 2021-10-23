@@ -13,7 +13,7 @@ class Linear(torch.nn.Module):
     out_features: int
     trainer: BaseTrainer
 
-    def __init__(self, in_features: int, out_features: int, k: int, binary_calculations: bool, trainer_type: BaseTrainer, bias: bool = True, device: str = None) -> None:
+    def __init__(self, in_features: int, out_features: int, k: int, binary_calculations: bool = False, trainer_type: BaseTrainer = None, bias: bool = True, device: str = None) -> None:
         super(Linear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
@@ -23,7 +23,8 @@ class Linear(torch.nn.Module):
         self.input_mask = self._input_mask_builder(k, in_features)
         self.trainer = trainer_type(tables_count=self.tables_count, k=k,
                                     binary_calculations=binary_calculations, device=device)
-        self.bias = torch.nn.Linear(1, out_features, device=device).bias if bias else None
+        self.bias = torch.nn.Linear(
+            1, out_features, device=device).bias if bias else None
 
     def _input_mask_builder_one_layer_random(self) -> np.array:
         _layer_input_size = self.in_features * self.k
@@ -43,9 +44,9 @@ class Linear(torch.nn.Module):
         batch_size = input.shape[0]
         expanded_input = input[:, self.input_mask]
         output = self.trainer(expanded_input).squeeze()
-        output = output.view(batch_size,-1)
+        output = output.view(batch_size, -1)
         assert output.shape[-1] == self.tables_count
-        output = output.view(batch_size,self.out_features, self.in_features)
+        output = output.view(batch_size, self.out_features, self.in_features)
         output = output.sum(-1)
         if self.bias != None:
             output = output+self.bias
