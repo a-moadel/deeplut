@@ -12,7 +12,7 @@ class test_Linear(unittest.TestCase):
                         binary_calculations=False, trainer_type=LagrangeTrainer, device='cpu')
         actual_main_achors = linear.input_mask[::2]
         total_length =5*3*2
-        expected_main_achors = np.array(range(15))%5
+        expected_main_achors = torch.from_numpy(np.array(range(15))%5)
         self.assertEqual(total_length,linear.input_mask.shape[0])
         self.assertTrue((actual_main_achors==expected_main_achors).all())
 
