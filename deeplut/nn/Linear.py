@@ -3,11 +3,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 from deeplut.trainer import LagrangeTrainer, BaseTrainer
 import numpy as np
+from deeplut.nn.utils import MaskBuilder
 
 
 class Linear(torch.nn.Module):
 
-    input_mask: torch.tensor
+    input_mask: torch.Tensor
     tables_count: int
     in_features: int
     out_features: int
@@ -26,18 +27,20 @@ class Linear(torch.nn.Module):
         self.bias = torch.nn.Linear(
             1, out_features, device=device).bias if bias else None
 
-    def _input_mask_builder_one_layer_random(self) -> np.array:
-        _layer_input_size = self.in_features * self.k
-        _random_indices = np.random.choice(self.in_features, _layer_input_size)
-        _random_indices[::self.k] = np.array(range(self.in_features))
-        return _random_indices
-
-    def _input_mask_builder(self, k: int, input_size: int) -> np.array:
+    def _table_input_selections_builder(self) -> np.array:
+        _all_inputs_set = set(range(self.in_features))
         result = []
-        for output_id in range(self.out_features):
-            result.append(self._input_mask_builder_one_layer_random())
-        result = np.array(result)
-        return result.flatten()
+        for out_idx in range(self.out_features):
+            for in_idx in range(self.in_features):
+                _idx_set = set([in_idx])
+                _selection = list(_all_inputs_set-_idx_set)
+                result.append((in_idx, _selection))
+        return result
+
+    def _input_mask_builder(self, k: int, input_size: int) -> torch.Tensor:
+        maskBuilder = MaskBuilder(
+            self.tables_count, self.k, self._table_input_selections_builder(), True)
+        return torch.from_numpy(maskBuilder.build()).long()
 
     def forward(self, input: torch.Tensor):
         assert len(input.shape) == 2
