@@ -1,5 +1,6 @@
 import unittest
 import deeplut
+from deeplut.optim.OptimWrapper import OptimWrapper
 import torch
 
 
@@ -7,7 +8,7 @@ class TestOptimWrapper(unittest.TestCase):
     def test_retrieving_parameters(self):
         model = SimpleFeedForward(2, 1)
         optimizer = torch.optim.RMSprop(model.parameters(), lr=0.01)
-        wrapper = deeplut.optim.OptimWrapper(optimizer)
+        wrapper = OptimWrapper(optimizer)
         self.assertEqual(list(model.parameters()), wrapper._get_params())
 
 

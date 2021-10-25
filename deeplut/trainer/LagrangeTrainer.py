@@ -1,5 +1,5 @@
 import torch
-from deeplut.nn.utils import generate_truth_table
+from deeplut.nn.utils import truth_table
 from deeplut.trainer.BaseTrainer import BaseTrainer
 from typing import Optional
 
@@ -28,7 +28,7 @@ class LagrangeTrainer(BaseTrainer):
         """
         self.tables_count = tables_count
         self.device = device
-        self.truth_table = generate_truth_table(k, 1, device)
+        self.truth_table = truth_table.generate_truth_table(k, 1, device)
 
         super(LagrangeTrainer, self).__init__(
             tables_count=self.tables_count,

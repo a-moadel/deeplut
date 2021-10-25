@@ -1,7 +1,7 @@
 import torch
 import numpy as np
-from deeplut.nn import Linear
-from deeplut.trainer import LagrangeTrainer
+from deeplut.nn.Linear import Linear
+from deeplut.trainer.LagrangeTrainer import LagrangeTrainer
 import unittest
 
 

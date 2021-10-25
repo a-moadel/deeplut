@@ -40,16 +40,6 @@ def train(model, device, train_loader, optimizer, epoch):
         loss = F.nll_loss(output, target)
         loss.backward()
         optimizer.step()
-        if batch_idx % 100 == 0:
-            print(
-                "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
-                    epoch,
-                    batch_idx * len(data),
-                    len(train_loader.dataset),
-                    100.0 * batch_idx / len(train_loader),
-                    loss.item(),
-                )
-            )
 
 
 def evaluate(model, device, test_loader):
@@ -64,15 +54,6 @@ def evaluate(model, device, test_loader):
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
             test_loss /= len(test_loader.dataset)
-
-            print(
-                "\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n".format(
-                    test_loss,
-                    correct,
-                    len(test_loader.dataset),
-                    100.0 * correct / len(test_loader.dataset),
-                )
-            )
 
 
 class Test_TrainMNIST(unittest.TestCase):

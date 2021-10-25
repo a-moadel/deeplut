@@ -1,12 +1,12 @@
 import unittest
 import torch
 import numpy as np
-from deeplut.nn.utils import generate_truth_table, reduce_truth_table
+from deeplut.nn.utils import truth_table
 
 
 class TestTruthTableGeneration(unittest.TestCase):
     def test_basic_scenario_k_2(self):
-        actual = generate_truth_table(2, 3, "cpu")
+        actual = truth_table.generate_truth_table(2, 3, "cpu")
 
         expected = torch.from_numpy(
             np.array(
@@ -24,7 +24,7 @@ class TestTruthTableGeneration(unittest.TestCase):
         self.assertTrue(torch.all(equal_result))
 
     def test_basic_scenario_k_3(self):
-        actual = generate_truth_table(3, 2, "cpu")
+        actual = truth_table.generate_truth_table(3, 2, "cpu")
 
         expected = torch.from_numpy(
             np.array(
@@ -42,7 +42,7 @@ class TestTruthTableGeneration(unittest.TestCase):
         self.assertTrue(torch.all(equal_result))
 
     def test_odd_scenario_k_0(self):
-        actual = generate_truth_table(0, 3, "cpu")
+        actual = truth_table.generate_truth_table(0, 3, "cpu")
 
         expected = torch.from_numpy(np.array([]))
         equal_result = torch.eq(actual, expected)
@@ -50,19 +50,19 @@ class TestTruthTableGeneration(unittest.TestCase):
 
     def test_odd_scenario_tables_count_0(self):
         with self.assertRaises(RuntimeError):
-            generate_truth_table(2, 0, "cpu")
+            truth_table.generate_truth_table(2, 0, "cpu")
 
     def test_missing_argument_tables_count(self):
         with self.assertRaises(TypeError):
-            actual = generate_truth_table(0, device="cpu")
+            actual = truth_table.generate_truth_table(0, device="cpu")
 
     def test_missing_argument_device(self):
         with self.assertRaises(TypeError):
-            generate_truth_table(0, 1)
+            truth_table.generate_truth_table(0, 1)
 
     def test_missing_argument_k(self):
         with self.assertRaises(TypeError):
-            actual = generate_truth_table(tables_count=1, device="cpu")
+            actual = truth_table.generate_truth_table(tables_count=1, device="cpu")
 
 
 class TestReduceTruthTable(unittest.TestCase):
@@ -79,7 +79,7 @@ class TestReduceTruthTable(unittest.TestCase):
                 ]
             )
         )
-        actual = reduce_truth_table(2, table, "cpu")
+        actual = truth_table.reduce_truth_table(2, table, "cpu")
         expected = torch.from_numpy(np.array([[1, -1, -1, 1], [1, -1, -1, 1], [1, -1, -1, 1]]))
         equal_result = torch.eq(actual, expected)
         self.assertTrue(torch.all(equal_result))
@@ -97,7 +97,7 @@ class TestReduceTruthTable(unittest.TestCase):
                 ]
             )
         )
-        actual = reduce_truth_table(2, table, "cpu")
+        actual = truth_table.reduce_truth_table(2, table, "cpu")
         expected = torch.from_numpy(
             np.array(
                 [

@@ -1,7 +1,7 @@
 import torch
 import numpy as np
-from deeplut.nn import Conv2d
-from deeplut.trainer import LagrangeTrainer
+from deeplut.nn.Conv2d import Conv2d
+from deeplut.trainer.LagrangeTrainer import LagrangeTrainer
 import unittest
 
 

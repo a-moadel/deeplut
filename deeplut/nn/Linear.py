@@ -1,7 +1,7 @@
 import torch
 from deeplut.trainer.BaseTrainer import BaseTrainer
 import numpy as np
-from deeplut.nn.utils import MaskBuilder
+from deeplut.nn.utils.MaskBuilder import MaskBuilder
 from typing import Type
 
 

@@ -2,7 +2,7 @@ import torch
 from deeplut.trainer.LagrangeTrainer import LagrangeTrainer
 from deeplut.trainer.BaseTrainer import BaseTrainer
 
-from deeplut.nn.utils import MaskBuilder
+from deeplut.nn.utils.MaskBuilder import MaskBuilder
 import math
 from typing import Union, Optional, Type
 
