@@ -1,18 +1,23 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import numpy as np
 from deeplut.nn.utils import generate_truth_table
-from deeplut.trainer import BaseTrainer
+from deeplut.trainer.BaseTrainer import BaseTrainer
+from typing import Optional
 
 
 class LagrangeTrainer(BaseTrainer):
 
     tables_count: int
-    device: str
+    device: Optional[str]
     truth_table: torch.Tensor
 
-    def __init__(self, tables_count: int, k: int, binary_calculations: bool, device: str):
+    def __init__(
+        self,
+        tables_count: int,
+        k: int,
+        binary_calculations: bool,
+        input_expanded: bool,
+        device: Optional[str],
+    ):
         """ Lagrange Approximation is using Lagrange interpolation to represent differentiable look-up tables.
 
         Args:
@@ -25,8 +30,13 @@ class LagrangeTrainer(BaseTrainer):
         self.device = device
         self.truth_table = generate_truth_table(k, 1, device)
 
-        super(LagrangeTrainer, self).__init__(tables_count=self.tables_count,
-                                              k=k, binary_calculations=binary_calculations, device=device)
+        super(LagrangeTrainer, self).__init__(
+            tables_count=self.tables_count,
+            k=k,
+            binary_calculations=binary_calculations,
+            input_expanded=input_expanded,
+            device=device,
+        )
 
     def _validate_input(self, input: torch.tensor):
         """ validate inputs dim before passing throw LUTs
@@ -38,7 +48,7 @@ class LagrangeTrainer(BaseTrainer):
             Exception: Invalid input dim
         """
         _rows_count = input.shape[-1]
-        _tbl_count = int(_rows_count/self.k)
+        _tbl_count = int(_rows_count / self.k)
         if _rows_count % self.k != 0 or _tbl_count != self.tables_count:
             raise Exception("Invalid input dim")
 

@@ -1,13 +1,13 @@
 import torch
 
-class OptimWrapper():
+
+class OptimWrapper:
 
     optimizer: torch.optim.Optimizer
-    
-    BinaryOptim: [bool]
 
+    BinaryOptim: bool
 
-    def __init__(self,  optimizer: torch.optim.Optimizer, BinaryOptim: bool = False):
+    def __init__(self, optimizer: torch.optim.Optimizer, BinaryOptim: bool = False):
         """constructor function intialize the inner optimizer and set binary optimization mode. 
 
         Args:
@@ -16,7 +16,7 @@ class OptimWrapper():
         """
         self.optimizer = optimizer
         self.BinaryOptim = BinaryOptim
-    
+
     def _pre_step(self):
         for p in list(self._get_params()):
             if hasattr(p, "org"):
@@ -26,10 +26,10 @@ class OptimWrapper():
         for p in list(self._get_params()):
             if hasattr(p, "org"):
                 p.org.copy_(p.data.clamp_(-1, 1))
-    
+
     def _get_params(self):
-        return self.optimizer.param_groups[0]['params']
-    
+        return self.optimizer.param_groups[0]["params"]
+
     def step(self, closure=None):
         """[summary]
 
@@ -38,9 +38,8 @@ class OptimWrapper():
         """
         if self.BinaryOptim:
             self._pre_step()
-        
+
         self.optimizer.step(closure)
-        
+
         if self.BinaryOptim:
             self._post_step()
-    

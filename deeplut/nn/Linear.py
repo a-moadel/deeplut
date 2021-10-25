@@ -1,9 +1,8 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from deeplut.trainer import LagrangeTrainer, BaseTrainer
+from deeplut.trainer.BaseTrainer import BaseTrainer
 import numpy as np
 from deeplut.nn.utils import MaskBuilder
+from typing import Type
 
 
 class Linear(torch.nn.Module):
@@ -14,18 +13,32 @@ class Linear(torch.nn.Module):
     out_features: int
     trainer: BaseTrainer
 
-    def __init__(self, in_features: int, out_features: int, k: int, binary_calculations: bool = False, trainer_type: BaseTrainer = None, bias: bool = True, device: str = None) -> None:
+    def __init__(
+        self,
+        in_features: int,
+        out_features: int,
+        k: int,
+        binary_calculations: bool,
+        input_expanded: bool,
+        trainer_type: Type[BaseTrainer],
+        bias: bool = True,
+        device: str = None,
+    ) -> None:
         super(Linear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.tables_count = in_features * out_features
         self.k = k
-        self.kk = 2**k
+        self.kk = 2 ** k
         self.input_mask = self._input_mask_builder(k, in_features)
-        self.trainer = trainer_type(tables_count=self.tables_count, k=k,
-                                    binary_calculations=binary_calculations, device=device)
-        self.bias = torch.nn.Linear(
-            1, out_features, device=device).bias if bias else None
+        self.trainer = trainer_type(
+            tables_count=self.tables_count,
+            k=k,
+            binary_calculations=binary_calculations,
+            input_expanded=input_expanded,
+            device=device,
+        )
+        self.bias = torch.nn.Linear(1, out_features, device=device).bias if bias else None
 
     def _table_input_selections_builder(self) -> np.array:
         _all_inputs_set = set(range(self.in_features))
@@ -33,14 +46,13 @@ class Linear(torch.nn.Module):
         for out_idx in range(self.out_features):
             for in_idx in range(self.in_features):
                 _idx_set = set([in_idx])
-                _selection = list(_all_inputs_set-_idx_set)
+                _selection = list(_all_inputs_set - _idx_set)
                 result.append((in_idx, _selection))
         return result
 
     def _input_mask_builder(self, k: int, input_size: int) -> torch.Tensor:
-        maskBuilder = MaskBuilder(
-            self.tables_count, self.k, self._table_input_selections_builder(), True)
-        return torch.from_numpy(maskBuilder.build()).long()
+        maskBuilder = MaskBuilder(self.k, self._table_input_selections_builder(), True)
+        return torch.from_numpy(maskBuilder.build_expanded()).long()
 
     def forward(self, input: torch.Tensor):
         assert len(input.shape) == 2
@@ -52,5 +64,5 @@ class Linear(torch.nn.Module):
         output = output.view(batch_size, self.out_features, self.in_features)
         output = output.sum(-1)
         if self.bias != None:
-            output = output+self.bias
+            output = output + self.bias
         return output
