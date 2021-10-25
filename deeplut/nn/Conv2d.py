@@ -98,7 +98,9 @@ class Conv2d(torch.nn.Module):
             for col_idx in range(0, self.input_dim[1], self.stride[1]):
                 conv_indices = self.get_conv_index_start_at(row_idx, col_idx)
                 if len(conv_indices) > 0:
-                    table_input_selections = self._table_input_selections_builder_conv(conv_indices)
+                    table_input_selections = (
+                        self._table_input_selections_builder_conv(conv_indices)
+                    )
                     for table_input_selection in table_input_selections:
                         result.append(table_input_selection)
         return result
@@ -106,7 +108,9 @@ class Conv2d(torch.nn.Module):
     def _table_input_selections_builder(self):
         result = []
         for output_channel in range(self.out_channels):
-            table_input_selections = self._table_input_selections_builder_one_output_channel()
+            table_input_selections = (
+                self._table_input_selections_builder_one_output_channel()
+            )
             for table_input_selection in table_input_selections:
                 result.append(table_input_selection)
         return result
@@ -139,11 +143,16 @@ class Conv2d(torch.nn.Module):
         assert len(input.shape) == 4
         batch_size = input.shape[0]
         expanded_input = input[
-            :, self.input_mask[:, 0], self.input_mask[:, 1], self.input_mask[:, 2]
+            :,
+            self.input_mask[:, 0],
+            self.input_mask[:, 1],
+            self.input_mask[:, 2],
         ]
         output = self.trainer(expanded_input).squeeze()
         output = output.view(batch_size, -1)
         assert output.shape[-1] == self.tables_count
-        output = output.view(batch_size, self.out_channels, self._hout(), self._wout(), -1)
+        output = output.view(
+            batch_size, self.out_channels, self._hout(), self._wout(), -1
+        )
         output = output.sum(-1)
         return output

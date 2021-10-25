@@ -13,7 +13,9 @@ class test_MaskBuilder(unittest.TestCase):
         ]
         maskBuilder = MaskBuilder(2, table_input_selections, True)
         actual_mask = maskBuilder.build_expanded()
-        expected_mask = np.array([[0, 0], [0, 1], [0, 1], [0, 2], [0, 2], [0, 1]])
+        expected_mask = np.array(
+            [[0, 0], [0, 1], [0, 1], [0, 2], [0, 2], [0, 1]]
+        )
         self.assertTrue((actual_mask == expected_mask).all())
 
 

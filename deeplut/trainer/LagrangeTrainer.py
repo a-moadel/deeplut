@@ -18,12 +18,12 @@ class LagrangeTrainer(BaseTrainer):
         input_expanded: bool,
         device: Optional[str],
     ):
-        """ Lagrange Approximation is using Lagrange interpolation to represent differentiable look-up tables.
+        """Lagrange Approximation is using Lagrange interpolation to represent differentiable look-up tables.
 
         Args:
             tables_count (int): Number of look up tables to train
             k (int): numper of inputs of each look up table
-            binary_calculations (bool): whether to force binary calculations - simulate real look up tabls - 
+            binary_calculations (bool): whether to force binary calculations - simulate real look up tabls -
             device (str): device of the output tensor.
         """
         self.tables_count = tables_count
@@ -39,7 +39,7 @@ class LagrangeTrainer(BaseTrainer):
         )
 
     def _validate_input(self, input: torch.tensor):
-        """ validate inputs dim before passing throw LUTs
+        """validate inputs dim before passing throw LUTs
 
         Args:
             input (torch.tensor): input from forward function.
@@ -53,7 +53,7 @@ class LagrangeTrainer(BaseTrainer):
             raise Exception("Invalid input dim")
 
     def _binarize(self, input: torch.tensor) -> torch.tensor:
-        """ binarize input to simulate real LUTs
+        """binarize input to simulate real LUTs
 
         Args:
             input (torch.tensor): Nd tensor

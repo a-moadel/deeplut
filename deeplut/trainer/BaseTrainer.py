@@ -3,8 +3,7 @@ from typing import Optional
 
 
 class BaseTrainer(torch.nn.Linear):
-    """ This class is the base class for trainers. provide a consistent interface for different ways of tables approximation.
-    """
+    """This class is the base class for trainers. provide a consistent interface for different ways of tables approximation."""
 
     binary_calculations: bool
     k: int
@@ -19,12 +18,12 @@ class BaseTrainer(torch.nn.Linear):
         input_expanded: bool,
         device: Optional[str],
     ) -> None:
-        """ Initalize BaseTrainer common data structure.
+        """Initalize BaseTrainer common data structure.
 
         Args:
-            tables_count (int): Number of tables consumers need to train 
+            tables_count (int): Number of tables consumers need to train
             k (int): Number of inputs for each table.
-            binary_calculations (bool): Whether to force binary calculations - simulate real look up tabls -  
+            binary_calculations (bool): Whether to force binary calculations - simulate real look up tabls -
             device (str): device of the output tensor.
         """
         self.binary_calculations = binary_calculations
@@ -32,11 +31,14 @@ class BaseTrainer(torch.nn.Linear):
         self.kk = 2 ** k
         self.input_expanded = input_expanded
         super(BaseTrainer, self).__init__(
-            in_features=self.kk, out_features=tables_count, bias=False, device=device
+            in_features=self.kk,
+            out_features=tables_count,
+            bias=False,
+            device=device,
         )
 
     def set_binary_calculations(self, binary_calculations: bool) -> None:
-        """ binary calculations 
+        """binary calculations
 
         Args:
             binary_calculations (bool): boolean value of the new binary calculations.
@@ -48,6 +50,6 @@ class BaseTrainer(torch.nn.Linear):
            Please note that this not applicable if you are using minimal look up tables setup.
 
         Args:
-            input_expanded (bool): boolean value of the new input_expanded. 
+            input_expanded (bool): boolean value of the new input_expanded.
         """
         self.input_expanded = input_expanded

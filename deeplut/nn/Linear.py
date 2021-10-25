@@ -38,7 +38,11 @@ class Linear(torch.nn.Module):
             input_expanded=input_expanded,
             device=device,
         )
-        self.bias = torch.nn.Linear(1, out_features, device=device).bias if bias else None
+        self.bias = (
+            torch.nn.Linear(1, out_features, device=device).bias
+            if bias
+            else None
+        )
 
     def _table_input_selections_builder(self) -> np.array:
         _all_inputs_set = set(range(self.in_features))
@@ -51,7 +55,9 @@ class Linear(torch.nn.Module):
         return result
 
     def _input_mask_builder(self, k: int, input_size: int) -> torch.Tensor:
-        maskBuilder = MaskBuilder(self.k, self._table_input_selections_builder(), True)
+        maskBuilder = MaskBuilder(
+            self.k, self._table_input_selections_builder(), True
+        )
         return torch.from_numpy(maskBuilder.build_expanded()).long()
 
     def forward(self, input: torch.Tensor):
@@ -63,6 +69,6 @@ class Linear(torch.nn.Module):
         assert output.shape[-1] == self.tables_count
         output = output.view(batch_size, self.out_features, self.in_features)
         output = output.sum(-1)
-        if self.bias != None:
+        if self.bias is not None:
             output = output + self.bias
         return output

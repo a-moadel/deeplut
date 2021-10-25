@@ -54,7 +54,7 @@ class TestTruthTableGeneration(unittest.TestCase):
 
     def test_missing_argument_tables_count(self):
         with self.assertRaises(TypeError):
-            actual = truth_table.generate_truth_table(0, device="cpu")
+            _ = truth_table.generate_truth_table(0, device="cpu")
 
     def test_missing_argument_device(self):
         with self.assertRaises(TypeError):
@@ -62,7 +62,7 @@ class TestTruthTableGeneration(unittest.TestCase):
 
     def test_missing_argument_k(self):
         with self.assertRaises(TypeError):
-            actual = truth_table.generate_truth_table(tables_count=1, device="cpu")
+            _ = truth_table.generate_truth_table(tables_count=1, device="cpu")
 
 
 class TestReduceTruthTable(unittest.TestCase):
@@ -80,7 +80,9 @@ class TestReduceTruthTable(unittest.TestCase):
             )
         )
         actual = truth_table.reduce_truth_table(2, table, "cpu")
-        expected = torch.from_numpy(np.array([[1, -1, -1, 1], [1, -1, -1, 1], [1, -1, -1, 1]]))
+        expected = torch.from_numpy(
+            np.array([[1, -1, -1, 1], [1, -1, -1, 1], [1, -1, -1, 1]])
+        )
         equal_result = torch.eq(actual, expected)
         self.assertTrue(torch.all(equal_result))
 

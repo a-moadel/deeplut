@@ -7,8 +7,10 @@ class OptimWrapper:
 
     BinaryOptim: bool
 
-    def __init__(self, optimizer: torch.optim.Optimizer, BinaryOptim: bool = False):
-        """constructor function intialize the inner optimizer and set binary optimization mode. 
+    def __init__(
+        self, optimizer: torch.optim.Optimizer, BinaryOptim: bool = False
+    ):
+        """constructor function intialize the inner optimizer and set binary optimization mode.
 
         Args:
             optimizer (torch.optim.Optimizer): pytorch optimizer or an implementation for torch.optim.Optimizer

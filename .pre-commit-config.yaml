@@ -1,11 +1,10 @@
 repos:
-  - repo: https://github.com/psf/black
-    rev: 19.10b0
+  - repo: https://github.com/ambv/black
+    rev: 21.9b0
     hooks:
       - id: black
-        args: [--line-length=100]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.761
+    rev: v0.910-1
     hooks:
       - id: mypy
         name: mypy_deeplut
@@ -14,7 +13,7 @@ repos:
         name: mypy_tests
         files: tests*
   - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.8.3
+    rev: 3.9.2
     hooks:
       - id: flake8
         name: flake8_deeplut
