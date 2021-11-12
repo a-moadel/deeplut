@@ -80,6 +80,26 @@ class test_LagrangeTrainer(unittest.TestCase):
     def test_random_large_test_seeded_k_3(self):
         self.random_testing_seeded(k=3, iterations_count=20)
 
+    def test_forward_two_tables_one_input_k_2_input_not_expanded(self):
+        lagrangeTrainer = LagrangeTrainer(
+            tables_count=2,
+            k=2,
+            binary_calculations=False,
+            input_expanded=False,
+            device="cpu",
+        )
+        np.array([1, 2, 3, 4])
+        input = torch.from_numpy(np.array([[1, 2, 3, 4]]))
+        lagrangeTrainer.weight.data = torch.from_numpy(
+            np.array([[5, 6, 7, 8], [9, 10, 11, 12]])
+        ).float()
+        output_0 = self.lagrange_calcs_k_2([5, 6, 7, 8], [1, 2])
+        output_1 = self.lagrange_calcs_k_2([9, 10, 11, 12], [3, 4])
+        output = lagrangeTrainer(input)
+        self.assertTrue(
+            (np.array([output_0, output_1]) == output.data.numpy()).all()
+        )
+
     def random_testing_seeded(self, k, iterations_count):
         maximum_batch_size = 100
         maximum_table_count = 200
@@ -145,25 +165,11 @@ class test_LagrangeTrainer(unittest.TestCase):
 
     def lagrange_calcs_k_2(self, weights, inputs):
 
-        return (
-            weights[0] * (inputs[0] - 1) * (inputs[1] - 1)
-            + weights[1] * (inputs[0] - 1) * (inputs[1] + 1)
-            + weights[2] * (inputs[0] + 1) * (inputs[1] - 1)
-            + weights[3] * (inputs[0] + 1) * (inputs[1] + 1)
-        )
+        return weights[0] * (inputs[0] - 1) * (-1)
 
     def lagrange_calcs_k_3(self, weights, inputs):
 
-        return (
-            weights[0] * (inputs[0] - 1) * (inputs[1] - 1) * (inputs[2] - 1)
-            + weights[1] * (inputs[0] - 1) * (inputs[1] - 1) * (inputs[2] + 1)
-            + weights[2] * (inputs[0] - 1) * (inputs[1] + 1) * (inputs[2] - 1)
-            + weights[3] * (inputs[0] - 1) * (inputs[1] + 1) * (inputs[2] + 1)
-            + weights[4] * (inputs[0] + 1) * (inputs[1] - 1) * (inputs[2] - 1)
-            + weights[5] * (inputs[0] + 1) * (inputs[1] - 1) * (inputs[2] + 1)
-            + weights[6] * (inputs[0] + 1) * (inputs[1] + 1) * (inputs[2] - 1)
-            + weights[7] * (inputs[0] + 1) * (inputs[1] + 1) * (inputs[2] + 1)
-        )
+        return weights[0] * (inputs[0] - 1)
 
 
 if __name__ == "__main__":

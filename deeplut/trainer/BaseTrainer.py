@@ -9,6 +9,7 @@ class BaseTrainer(torch.nn.Linear):
     k: int
     kk: int
     input_expanded: bool
+    tables_count: int
 
     def __init__(
         self,
@@ -30,6 +31,7 @@ class BaseTrainer(torch.nn.Linear):
         self.k = k
         self.kk = 2 ** k
         self.input_expanded = input_expanded
+        self.tables_count = tables_count
         super(BaseTrainer, self).__init__(
             in_features=self.kk,
             out_features=tables_count,
@@ -45,7 +47,7 @@ class BaseTrainer(torch.nn.Linear):
         """
         self.binary_calculations = binary_calculations
 
-    def set_input_expansion(self, input_expanded: bool) -> None:
+    def set_input_expanded(self, input_expanded: bool) -> None:
         """Set the value for input expansion, either we use expanded input for not, using expanded input means we only consider first input for each lut.
            Please note that this not applicable if you are using minimal look up tables setup.
 
