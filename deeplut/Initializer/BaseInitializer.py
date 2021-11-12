@@ -2,7 +2,7 @@ from typing import Optional
 from deeplut.trainer.BaseTrainer import BaseTrainer
 
 
-class BaseInitializer():
+class BaseInitializer:
     trainer: BaseTrainer
     device: Optional[str]
 
