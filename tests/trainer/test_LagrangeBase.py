@@ -93,8 +93,10 @@ class test_LagrangeTrainer(unittest.TestCase):
         lagrangeTrainer.weight.data = torch.from_numpy(
             np.array([[5, 6, 7, 8], [9, 10, 11, 12]])
         ).float()
-        output_0 = self.lagrange_calcs_k_2([5, 6, 7, 8], [1, 2])
-        output_1 = self.lagrange_calcs_k_2([9, 10, 11, 12], [3, 4])
+        output_0 = self.lagrange_calcs_k_2_not_expanded([5, 6, 7, 8], [1, 2])
+        output_1 = self.lagrange_calcs_k_2_not_expanded(
+            [9, 10, 11, 12], [3, 4]
+        )
         output = lagrangeTrainer(input)
         self.assertTrue(
             (np.array([output_0, output_1]) == output.data.numpy()).all()
@@ -165,9 +167,31 @@ class test_LagrangeTrainer(unittest.TestCase):
 
     def lagrange_calcs_k_2(self, weights, inputs):
 
-        return weights[0] * (inputs[0] - 1) * (-1)
+        return (
+            weights[0] * (inputs[0] - 1) * (inputs[1] - 1)
+            + weights[1] * (inputs[0] - 1) * (inputs[1] + 1)
+            + weights[2] * (inputs[0] + 1) * (inputs[1] - 1)
+            + weights[3] * (inputs[0] + 1) * (inputs[1] + 1)
+        )
 
     def lagrange_calcs_k_3(self, weights, inputs):
+
+        return (
+            weights[0] * (inputs[0] - 1) * (inputs[1] - 1) * (inputs[2] - 1)
+            + weights[1] * (inputs[0] - 1) * (inputs[1] - 1) * (inputs[2] + 1)
+            + weights[2] * (inputs[0] - 1) * (inputs[1] + 1) * (inputs[2] - 1)
+            + weights[3] * (inputs[0] - 1) * (inputs[1] + 1) * (inputs[2] + 1)
+            + weights[4] * (inputs[0] + 1) * (inputs[1] - 1) * (inputs[2] - 1)
+            + weights[5] * (inputs[0] + 1) * (inputs[1] - 1) * (inputs[2] + 1)
+            + weights[6] * (inputs[0] + 1) * (inputs[1] + 1) * (inputs[2] - 1)
+            + weights[7] * (inputs[0] + 1) * (inputs[1] + 1) * (inputs[2] + 1)
+        )
+
+    def lagrange_calcs_k_2_not_expanded(self, weights, inputs):
+
+        return weights[0] * (inputs[0] - 1) * (-1)
+
+    def lagrange_calcs_k_3_not_expanded(self, weights, inputs):
 
         return weights[0] * (inputs[0] - 1)
 
