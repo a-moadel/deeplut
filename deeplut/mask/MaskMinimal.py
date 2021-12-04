@@ -1,9 +1,9 @@
 import numpy as np
+import math
 from deeplut.mask.MaskBase import MaskBase
 
 
 class MaskMinimal(MaskBase):
-
     def __init__(
         self, k: int, table_input_selections: list, replace: bool = False
     ) -> None:
@@ -15,7 +15,9 @@ class MaskMinimal(MaskBase):
             represent the elements we select form to fill in the k-1 inputs for the table.
             replace (bool, optional): Either we select from the list with/out replacement.
         """
-        super().__init__(k=k, table_input_selections=table_input_selections, replace=replace)
+        super().__init__(
+            k=k, table_input_selections=table_input_selections, replace=replace
+        )
 
     def build(self) -> np.ndarray:
         """build minimal mask, where connect inputs concetively to use fewer number of luts.
@@ -32,7 +34,7 @@ class MaskMinimal(MaskBase):
                 ]
                 result.append(table_input_selection[0])
         return np.array(result)
-    
+
     def get_tables_count(self) -> int:
         input_length = len(self.table_input_selections)
-        return int(math.ceil(input_length / self.k)) * self.k
+        return int(math.ceil(input_length / self.k))

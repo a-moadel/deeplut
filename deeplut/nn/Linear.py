@@ -13,8 +13,8 @@ class Linear(torch.nn.Module):
     out_features: int
     trainer: BaseTrainer
     mask_builder_type: Type[MaskBase]
-    mask_builder : MaskBase
-    
+    mask_builder: MaskBase
+
     def __init__(
         self,
         in_features: int,
@@ -42,7 +42,7 @@ class Linear(torch.nn.Module):
             input_expanded=input_expanded,
             device=device,
         )
-        
+
         self.bias = (
             torch.nn.Linear(1, out_features, device=device).bias
             if bias

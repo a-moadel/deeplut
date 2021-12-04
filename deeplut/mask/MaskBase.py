@@ -22,3 +22,9 @@ class MaskBase:
         self.table_input_selections = table_input_selections
         self.replace = replace
         super().__init__()
+
+    def build(self):
+        return
+
+    def get_tables_count(self):
+        return

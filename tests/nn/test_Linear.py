@@ -16,7 +16,7 @@ class test_Linear(unittest.TestCase):
             binary_calculations=False,
             input_expanded=True,
             trainer_type=LagrangeTrainer,
-            mask_builder_type= MaskExpanded,
+            mask_builder_type=MaskExpanded,
             device="cpu",
         )
         actual_main_achors = linear.input_mask[::2]
@@ -35,7 +35,7 @@ class test_Linear(unittest.TestCase):
             binary_calculations=False,
             input_expanded=True,
             trainer_type=LagrangeTrainer,
-            mask_builder_type= MaskExpanded,
+            mask_builder_type=MaskExpanded,
             device="cpu",
         )
         batch_image = torch.rand(1, 5)

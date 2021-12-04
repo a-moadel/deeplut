@@ -4,7 +4,6 @@ from deeplut.mask.MaskExpanded import MaskExpanded
 
 
 class test_MaskExpanded(unittest.TestCase):
-    
     def test_mask_builder_normal_scenario(self):
         np.random.seed(0)
         table_input_selections = [
@@ -18,6 +17,7 @@ class test_MaskExpanded(unittest.TestCase):
             [[0, 0], [0, 1], [0, 1], [0, 2], [0, 2], [0, 1]]
         )
         self.assertTrue((actual_mask == expected_mask).all())
+
 
 if __name__ == "__main__":
     unittest.main()

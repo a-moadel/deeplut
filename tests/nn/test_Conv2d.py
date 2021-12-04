@@ -14,14 +14,13 @@ class test_Conv2d(unittest.TestCase):
             out_channels=3,
             kernel_size=(3, 3),
             trainer_type=LagrangeTrainer,
-            mask_builder_type= MaskExpanded,
+            mask_builder_type=MaskExpanded,
             stride=(2, 2),
             padding=False,
             dilation=(1, 1),
             groups=1,
             bias=True,
             input_dim=5,
-            
         )
         actual_conv_start_0_0 = conv2d.get_conv_index_start_at(0, 0)
         expected_conv_start_0_0 = [
@@ -78,7 +77,7 @@ class test_Conv2d(unittest.TestCase):
             out_channels=3,
             kernel_size=(3, 3),
             trainer_type=LagrangeTrainer,
-            mask_builder_type= MaskExpanded,
+            mask_builder_type=MaskExpanded,
             stride=(2, 2),
             padding=False,
             dilation=(1, 2),
@@ -122,7 +121,7 @@ class test_Conv2d(unittest.TestCase):
             out_channels=2,
             kernel_size=3,
             trainer_type=LagrangeTrainer,
-            mask_builder_type= MaskExpanded,
+            mask_builder_type=MaskExpanded,
             stride=(1, 1),
             padding=0,
             dilation=1,
@@ -141,7 +140,7 @@ class test_Conv2d(unittest.TestCase):
             out_channels=2,
             kernel_size=3,
             trainer_type=LagrangeTrainer,
-            mask_builder_type= MaskExpanded,
+            mask_builder_type=MaskExpanded,
             stride=(2, 2),
             padding=0,
             dilation=1,

@@ -4,7 +4,6 @@ import math
 
 
 class MaskExpanded(MaskBase):
-
     def __init__(
         self, k: int, table_input_selections: list, replace: bool = False
     ) -> None:
@@ -16,7 +15,9 @@ class MaskExpanded(MaskBase):
             represent the elements we select form to fill in the k-1 inputs for the table.
             replace (bool, optional): Either we select from the list with/out replacement.
         """
-        super().__init__(k=k, table_input_selections=table_input_selections, replace=replace)
+        super().__init__(
+            k=k, table_input_selections=table_input_selections, replace=replace
+        )
 
     def build(self) -> np.ndarray:
         """build expanded mask where for each input we have a table and remaining inputs for the same table we select in random from the given selection list.
