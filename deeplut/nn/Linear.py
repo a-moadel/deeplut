@@ -30,13 +30,16 @@ class Linear(torch.nn.Module):
         super(Linear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.tables_count = in_features * out_features
+
         self.k = k
         self.kk = 2 ** k
         self.mask_builder_type = mask_builder_type
         self.input_mask = self._input_mask_builder()
+        self.tables_count = (
+            self.mask_builder.get_tables_count() * self.out_features
+        )
         self.trainer = trainer_type(
-            tables_count=self.mask_builder.get_tables_count(),
+            tables_count=self.tables_count,
             k=k,
             binary_calculations=binary_calculations,
             input_expanded=input_expanded,
@@ -52,18 +55,20 @@ class Linear(torch.nn.Module):
     def _table_input_selections_builder(self) -> np.array:
         _all_inputs_set = set(range(self.in_features))
         result = []
-        for _ in range(self.out_features):
-            for in_idx in range(self.in_features):
-                _idx_set = set([in_idx])
-                _selection = list(_all_inputs_set - _idx_set)
-                result.append((in_idx, _selection))
+        for in_idx in range(self.in_features):
+            _idx_set = set([in_idx])
+            _selection = list(_all_inputs_set - _idx_set)
+            result.append((in_idx, _selection))
         return result
 
     def _input_mask_builder(self) -> torch.Tensor:
-        self.mask_builder = self.mask_builder_type(
-            self.k, self._table_input_selections_builder(), True
-        )
-        return torch.from_numpy(self.mask_builder.build()).long()
+        result = []
+        for _ in range(self.out_features):
+            self.mask_builder = self.mask_builder_type(
+                self.k, self._table_input_selections_builder(), True
+            )
+            result.append(self.mask_builder.build())
+        return np.concatenate(result)
 
     def forward(self, input: torch.Tensor):
         assert len(input.shape) == 2
@@ -72,7 +77,11 @@ class Linear(torch.nn.Module):
         output = self.trainer(expanded_input).squeeze()
         output = output.view(batch_size, -1)
         assert output.shape[-1] == self.tables_count
-        output = output.view(batch_size, self.out_features, self.in_features)
+        output = output.view(
+            batch_size,
+            self.out_features,
+            int(self.tables_count / self.out_features),
+        )
         output = output.sum(-1)
         if self.bias is not None:
             output = output + self.bias
