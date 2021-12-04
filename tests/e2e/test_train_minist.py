@@ -4,7 +4,7 @@ import deeplut
 import torch.nn.functional as F
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
-from deeplut.nn import Linear as dLinear
+from deeplut.nn.Linear import Linear as dLinear
 from deeplut.optim import OptimWrapper as dOptimWrapper
 
 

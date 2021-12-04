@@ -2,6 +2,7 @@ import torch
 import numpy as np
 from deeplut.nn.Conv2d import Conv2d
 from deeplut.trainer.LagrangeTrainer import LagrangeTrainer
+from deeplut.mask.MaskExpanded import MaskExpanded
 import unittest
 
 
@@ -12,13 +13,15 @@ class test_Conv2d(unittest.TestCase):
             in_channels=2,
             out_channels=3,
             kernel_size=(3, 3),
+            trainer_type=LagrangeTrainer,
+            mask_builder_type= MaskExpanded,
             stride=(2, 2),
             padding=False,
             dilation=(1, 1),
             groups=1,
             bias=True,
             input_dim=5,
-            trainer_type=LagrangeTrainer,
+            
         )
         actual_conv_start_0_0 = conv2d.get_conv_index_start_at(0, 0)
         expected_conv_start_0_0 = [
@@ -74,13 +77,14 @@ class test_Conv2d(unittest.TestCase):
             in_channels=2,
             out_channels=3,
             kernel_size=(3, 3),
+            trainer_type=LagrangeTrainer,
+            mask_builder_type= MaskExpanded,
             stride=(2, 2),
             padding=False,
             dilation=(1, 2),
             groups=1,
             bias=True,
             input_dim=5,
-            trainer_type=LagrangeTrainer,
         )
         actual_conv_start_0_0 = conv2d.get_conv_index_start_at(0, 0)
         expected_conv_start_0_0 = [
@@ -117,13 +121,14 @@ class test_Conv2d(unittest.TestCase):
             in_channels=3,
             out_channels=2,
             kernel_size=3,
+            trainer_type=LagrangeTrainer,
+            mask_builder_type= MaskExpanded,
             stride=(1, 1),
             padding=0,
             dilation=1,
             groups=1,
             bias=True,
             input_dim=5,
-            trainer_type=LagrangeTrainer,
         )
 
         actual = conv2d(batch)
@@ -135,13 +140,14 @@ class test_Conv2d(unittest.TestCase):
             in_channels=3,
             out_channels=2,
             kernel_size=3,
+            trainer_type=LagrangeTrainer,
+            mask_builder_type= MaskExpanded,
             stride=(2, 2),
             padding=0,
             dilation=1,
             groups=1,
             bias=True,
             input_dim=10,
-            trainer_type=LagrangeTrainer,
         )
 
         actual = conv2d(batch)

@@ -2,6 +2,7 @@ import torch
 import numpy as np
 from deeplut.nn.Linear import Linear
 from deeplut.trainer.LagrangeTrainer import LagrangeTrainer
+from deeplut.mask.MaskExpanded import MaskExpanded
 import unittest
 
 
@@ -15,6 +16,7 @@ class test_Linear(unittest.TestCase):
             binary_calculations=False,
             input_expanded=True,
             trainer_type=LagrangeTrainer,
+            mask_builder_type= MaskExpanded,
             device="cpu",
         )
         actual_main_achors = linear.input_mask[::2]
@@ -33,6 +35,7 @@ class test_Linear(unittest.TestCase):
             binary_calculations=False,
             input_expanded=True,
             trainer_type=LagrangeTrainer,
+            mask_builder_type= MaskExpanded,
             device="cpu",
         )
         batch_image = torch.rand(1, 5)

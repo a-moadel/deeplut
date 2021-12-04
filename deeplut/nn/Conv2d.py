@@ -2,7 +2,7 @@ import torch
 from deeplut.trainer.LagrangeTrainer import LagrangeTrainer
 from deeplut.trainer.BaseTrainer import BaseTrainer
 
-from deeplut.nn.utils.MaskBuilder import MaskBuilder
+from deeplut.mask.MaskBase import MaskBase
 import math
 from typing import Union, Optional, Type
 
@@ -23,12 +23,16 @@ class Conv2d(torch.nn.Module):
     input_mask: torch.Tensor
     k: int
     trainer: BaseTrainer
+    mask_builder_type: Type[MaskBase]
+    mask_builder: MaskBase
 
     def __init__(
         self,
         in_channels: int,
         out_channels: int,
         kernel_size: Union[int, tuple],
+        trainer_type: Type[BaseTrainer],
+        mask_builder_type: Type[MaskBase],
         stride: Union[int, tuple] = 1,
         padding: Union[int, tuple] = 0,
         dilation: Union[int, tuple] = 1,
@@ -40,13 +44,13 @@ class Conv2d(torch.nn.Module):
         input_expanded: bool = True,
         input_dim: Union[int, tuple] = None,
         device: str = None,
-        trainer_type: Type[BaseTrainer] = LagrangeTrainer,
     ):
         super(Conv2d, self).__init__()
 
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = torch.nn.modules.utils._pair(kernel_size)
+        self.mask_builder_type = mask_builder_type
         self.stride = torch.nn.modules.utils._pair(stride)
         self.padding = torch.nn.modules.utils._pair(padding)
         self.dilation = torch.nn.modules.utils._pair(dilation)
@@ -58,7 +62,7 @@ class Conv2d(torch.nn.Module):
         self.device = device
         self.input_mask = self._input_mask_builder()
         self.trainer = trainer_type(
-            tables_count=self.tables_count,
+            tables_count=self.mask_builder.get_tables_count(),
             k=k,
             binary_calculations=binary_calculations,
             input_expanded=input_expanded,
@@ -118,8 +122,8 @@ class Conv2d(torch.nn.Module):
     def _input_mask_builder(self) -> torch.Tensor:
         selections = self._table_input_selections_builder()
         self.tables_count = len(selections)
-        maskBuilder = MaskBuilder(self.k, selections, True)
-        return torch.from_numpy(maskBuilder.build_expanded()).long()
+        self.mask_builder = self.mask_builder_type(self.k, selections, True)
+        return torch.from_numpy(self.mask_builder.build()).long()
 
     def _hout(self):
         _h_out = (

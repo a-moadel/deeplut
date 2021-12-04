@@ -1,16 +1,14 @@
 import numpy as np
+from deeplut.mask.MaskBase import MaskBase
+import math
 
 
-class MaskBuilder:
-
-    k: int
-    table_input_selections: list
-    replace: bool
+class MaskExpanded(MaskBase):
 
     def __init__(
         self, k: int, table_input_selections: list, replace: bool = False
     ) -> None:
-        """MaskBuilder servers as basis for building expansion masks the wire from high level layers and learners.
+        """MaskExpanded servers as basic for building expansion masks that wire from high level layers and learners.
 
         Args:
             k (int): k degree of each table
@@ -18,12 +16,9 @@ class MaskBuilder:
             represent the elements we select form to fill in the k-1 inputs for the table.
             replace (bool, optional): Either we select from the list with/out replacement.
         """
-        self.k = k
-        self.table_input_selections = table_input_selections
-        self.replace = replace
-        super().__init__()
+        super().__init__(k=k, table_input_selections=table_input_selections, replace=replace)
 
-    def build_expanded(self) -> np.ndarray:
+    def build(self) -> np.ndarray:
         """build expanded mask where for each input we have a table and remaining inputs for the same table we select in random from the given selection list.
 
         Returns:
@@ -41,18 +36,6 @@ class MaskBuilder:
                 result.append(possible_selections[id])
         return np.array(result)
 
-    def build_minimal(self) -> np.ndarray:
-        """[summary]
-
-        Returns:
-            np.ndarray: expansion mask.
-        """
-        result = []
-        length = len(self.table_input_selections)
-        for i in range(0, length, self.k):
-            for j in range(self.k):
-                table_input_selection = self.table_input_selections[
-                    (i + j) % length
-                ]
-                result.append(table_input_selection[0])
-        return np.array(result)
+    def get_tables_count(self) -> int:
+        input_length = len(self.table_input_selections)
+        return input_length
