@@ -7,13 +7,13 @@ class MaskExpanded(MaskBase):
     def __init__(
         self, k: int, table_input_selections: list, replace: bool = False
     ) -> None:
-        """MaskExpanded servers as basic for building expansion masks that wire from high level layers and learners.
+        """MaskExpanded : Implements mask expansion where each input is expanded in a LUT and we randomly select the remaining inputs for each LUT from table_input_selections list.
 
         Args:
             k (int): k degree of each table
-            table_input_selections (list): List of tuple(selector,list(selector)) , where selector is 1d Array that select an elemen in the input. The second element in the tuple
-            represent the elements we select form to fill in the k-1 inputs for the table.
-            replace (bool, optional): Either we select from the list with/out replacement.
+            table_input_selections (list): List of tuple(selector,list(selector)) , where selector is 1d Array that select an element in the input. The second element in the tuple
+            represents the elements we select from to fill in the k-1 inputs for the table.
+            replace (bool, optional): Either we select from the list with/out the replacement.
         """
         super().__init__(
             k=k, table_input_selections=table_input_selections, replace=replace

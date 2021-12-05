@@ -7,20 +7,21 @@ class MaskMinimal(MaskBase):
     def __init__(
         self, k: int, table_input_selections: list, replace: bool = False
     ) -> None:
-        """MaskMinimal servers as basic for building expansion masks that wire from high level layers and learners.
+        """MaskMinimal: Implements minimal mask which tries to use a fewer number of LUTs, ex: if we have 5 inputs and LUT with k=2 this will result in 3 LUTs only needed.
+                        For now, it connects the inputs consecutively and the remaining inputs are selected from the beginning.
 
         Args:
             k (int): k degree of each table
-            table_input_selections (list): List of tuple(selector,list(selector)) , where selector is 1d Array that select an elemen in the input. The second element in the tuple
-            represent the elements we select form to fill in the k-1 inputs for the table.
-            replace (bool, optional): Either we select from the list with/out replacement.
+            table_input_selections (list): List of tuple(selector,list(selector)) , where selector is 1d Array that select an element in the input. The second element in the tuple
+            represents the elements we select a form to fill in the k-1 inputs for the table.
+            replace (bool, optional): Either we select from the list with/out the replacement.
         """
         super().__init__(
             k=k, table_input_selections=table_input_selections, replace=replace
         )
 
     def build(self) -> np.ndarray:
-        """build minimal mask, where connect inputs concetively to use fewer number of luts.
+        """build minimal mask, where connect inputs consecutively to use fewer number of LUTs.
 
         Returns:
             np.ndarray: expansion mask.
