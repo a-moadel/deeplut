@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = "0.0.2"
+VERSION = "0.0.4"
 DESCRIPTION = "deeplut, a python lib to train look up tables (LUTs) natively"
 LONG_DESCRIPTION = "A Python library that aims to provide a flexible, extendible, lightening fast, and easy-to-use framework to train look-up tables (LUT) deep neural networks from scratch."
 

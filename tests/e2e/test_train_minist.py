@@ -1,11 +1,12 @@
 import unittest
 import torch
-import deeplut
 import torch.nn.functional as F
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
-from deeplut.nn import Linear as dLinear
+from deeplut.nn.Linear import Linear as dLinear
 from deeplut.optim import OptimWrapper as dOptimWrapper
+from deeplut.mask.MaskMinimal import MaskMinimal
+from deeplut.trainer.LagrangeTrainer import LagrangeTrainer
 
 
 class NeuralNetwork(torch.nn.Module):
@@ -15,10 +16,12 @@ class NeuralNetwork(torch.nn.Module):
 
         self.layer1 = dLinear(
             28 * 28,
-            512,
+            128,
             k=2,
             binary_calculations=True,
-            trainer_type=deeplut.trainer.LagrangeTrainer,
+            trainer_type=LagrangeTrainer,
+            mask_builder_type=MaskMinimal,
+            bias=False,
         )
         self.activation = torch.nn.ReLU()
         self.final = torch.nn.Linear(512, 10)
