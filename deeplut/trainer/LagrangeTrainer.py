@@ -1,7 +1,10 @@
 import torch
+from torch.functional import Tensor
+from deeplut import initializer
 from deeplut.nn.utils import truth_table
 from deeplut.trainer.BaseTrainer import BaseTrainer
-from typing import Optional
+from deeplut.initializer.Memorize import Memorize
+from typing import Optional, Type
 
 
 class LagrangeTrainer(BaseTrainer):
@@ -24,12 +27,10 @@ class LagrangeTrainer(BaseTrainer):
             k (int): Number of inputs for each table.
             binary_calculations (bool): Whether to force binary calculations - simulate real look up tabls -
             input_expanded (bool): If set to True, means all LUT's inputs are considered during calculations , else only the first input will considered and the remaining will be masked.
-            base_initializer (BaseInitializer): An implementation for BaseInitializer interface , which can be used to intialize the lookup tables weights differently.
             device (str): device of the output tensor.
         """
         self.device = device
         self.truth_table = truth_table.generate_truth_table(k, 1, device)
-
         super(LagrangeTrainer, self).__init__(
             tables_count=tables_count,
             k=k,
@@ -65,8 +66,9 @@ class LagrangeTrainer(BaseTrainer):
             input.data = torch.sign(input.data)
         return input
 
-    def forward(self, input: torch.tensor):
-
+    def forward(self, input: torch.tensor, targets: torch.tensor=None, initalize: bool = False) -> torch.Tensor:
+        if initalize and self.initializer != None and targets != None:
+            self.initializer.update_counter(input, targets)
         if not hasattr(self.weight, "org"):
             self.weight.org = self.weight.data.clone()
         self._validate_input(input)
@@ -93,6 +95,12 @@ class LagrangeTrainer(BaseTrainer):
 
         return out
 
+    # if we have more intitalizers , may be better we introduce builders for each base module , where we all the object creation logic should live.
+    def set_memorize_as_initializer(self) -> None:
+        initializer = Memorize(
+            self.tables_count, self.k, self.kk, self.generate_weight_lookup(), self.device)
+        self.set_initializer(initializer=initializer)
+
     def generate_weight_lookup(self) -> None:
         k = self.k
         kk = self.kk
@@ -100,7 +108,8 @@ class LagrangeTrainer(BaseTrainer):
         weights = truth_table.generate_truth_table(
             k=kk, tables_count=1, device=self.device
         )
-        inputs = truth_table.generate_truth_table(k=k, tables_count=1, device=self.device)
+        inputs = truth_table.generate_truth_table(
+            k=k, tables_count=1, device=self.device)
         with torch.no_grad():
             for weight in weights.T:
                 output = []

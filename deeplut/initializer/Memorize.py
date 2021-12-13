@@ -3,6 +3,7 @@ from deeplut.initializer.BaseInitializer import BaseInitializer
 from typing import Dict, Optional
 import torch
 import numpy as np
+import random
 
 
 class Memorize(BaseInitializer):
@@ -12,12 +13,12 @@ class Memorize(BaseInitializer):
     def __init__(
         self, table_count, k, kk, weight_lookup_table: Dict, device: Optional[str]
     ) -> None:
-        super().__init__(table_count, k, kk,device)
-        self.weight_lookup_table = weight_lookup_table
+        super().__init__(table_count, k, kk, weight_lookup_table,device)
+        
 
     def _input_to_id(self, inputs: np.array) -> torch.Tensor:
         # inputs.shape (batch, tablecount * k)
-        _inputs = inputs.clone().detach().view(-1, self.k)
+        _inputs = inputs.sign().clone().detach().view(-1, self.k)
         _inputs[_inputs == -1] = 0
         power_arr = 2 ** torch.arange(_inputs.shape[-1]).flip(0).view(-1, 1)
 
@@ -40,7 +41,7 @@ class Memorize(BaseInitializer):
         _target_value = _target_value.repeat(table_count, 1).T.flatten()
 
         table_ids = torch.arange(table_count).repeat(batch_size)
-        self.counter[table_ids, input_ids.flatten()] += _target_value
+        self.counter[table_ids.long(), input_ids.long().flatten()] += _target_value
 
     def update_counter(self, x: torch.Tensor, target: torch.Tensor) -> None:
         with torch.no_grad():
@@ -50,9 +51,23 @@ class Memorize(BaseInitializer):
     def update_luts_weights(self) -> torch.Tensor:
         new_weights = []
         for row in self.counter:
-            key = tuple(row.detach().cpu().flatten().sign().numpy().tolist())
+            key = row.detach().cpu().flatten().sign().numpy().tolist() 
+            key = self._break_ties_in_key(key)
             value = self.weight_lookup_table[key]
             new_weights.append(value)
         new_weights = torch.tensor(
             new_weights, dtype=torch.float32, requires_grad=True).view(-1, self.kk)
         return new_weights
+
+    def _break_ties_in_key(self,key):
+        result = [] #tuple()
+        for element in key:
+            val = element
+            if(val == 0):
+                x = random.uniform(0,1)
+                if(x<=.5):
+                    val = 1
+                else:
+                    val = -1
+            result.append(val)
+        return tuple(result)

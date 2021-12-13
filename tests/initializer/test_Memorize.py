@@ -1,3 +1,4 @@
+import random
 import unittest
 import numpy as np
 import torch
@@ -57,6 +58,22 @@ class test_Memorize(unittest.TestCase):
 
         self.assertTrue((expected_output == actual_output).all())
 
+    def test_update_tables_weights_can_not_decide_senario(self):
+        trainer = LagrangeTrainer(1, 2, True, True, None)
+        memorize_initializer = Memorize(
+            trainer.tables_count, trainer.k, trainer.kk, trainer.generate_weight_lookup(), None)
+        inputs = torch.tensor([[-1,1],[-1,1],[1,1],[1,1]])
+        targets = torch.tensor([0, 1, 0, 1]).view(4, 1)
+        memorize_initializer.clear()
+        memorize_initializer.update_counter(inputs, targets)
+        random.seed(10)
+        trainer.weight.data = memorize_initializer.update_luts_weights()
+
+        actual_output = trainer(
+            inputs).detach().cpu().flatten().numpy()
+        expected_output = np.array([1, 1, 1, 1])
+
+        self.assertTrue((expected_output == actual_output).all())
 
 if __name__ == "__main__":
     unittest.main()

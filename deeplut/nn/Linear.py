@@ -1,3 +1,4 @@
+from numpy.core.fromnumeric import trace
 import torch
 from deeplut.trainer.BaseTrainer import BaseTrainer
 from deeplut.initializer.BaseInitializer import BaseInitializer
@@ -70,12 +71,12 @@ class Linear(torch.nn.Module):
             )
             result.append(self.mask_builder.build())
         return np.concatenate(result)
-
-    def forward(self, input: torch.Tensor):
+            
+    def forward(self, input: torch.Tensor, targets: torch.tensor=None, initalize: bool = False):
         assert len(input.shape) == 2
         batch_size = input.shape[0]
         expanded_input = input[:, self.input_mask]
-        output = self.trainer(expanded_input).squeeze()
+        output = self.trainer(expanded_input, targets, initalize).squeeze()
         output = output.view(batch_size, -1)
         assert output.shape[-1] == self.tables_count
         output = output.view(
@@ -96,3 +97,9 @@ class Linear(torch.nn.Module):
             input_expanded (bool): boolean value of the new input_expanded.
         """
         self.trainer.set_input_expanded(input_expanded)
+    
+    def pre_initialize(self):
+        self.trainer.clear_initializion()
+    
+    def update_initialized_weights(self):
+        self.trainer.update_initialized_weights()
