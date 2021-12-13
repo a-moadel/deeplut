@@ -1,5 +1,6 @@
 import torch
 from deeplut.trainer.BaseTrainer import BaseTrainer
+from deeplut.initializer.BaseInitializer import BaseInitializer
 import numpy as np
 from deeplut.mask.MaskBase import MaskBase
 from typing import Type
@@ -45,7 +46,7 @@ class Linear(torch.nn.Module):
             input_expanded=input_expanded,
             device=device,
         )
-
+                
         self.bias = (
             torch.nn.Linear(1, out_features, device=device).bias
             if bias

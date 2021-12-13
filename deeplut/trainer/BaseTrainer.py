@@ -1,6 +1,6 @@
 import torch
 from typing import Optional
-
+from deeplut.nn.utils import truth_table
 
 class BaseTrainer(torch.nn.Linear):
     """This class is the base class for trainers. provide a consistent interface for different ways of tables approximation."""
@@ -25,11 +25,13 @@ class BaseTrainer(torch.nn.Linear):
             tables_count (int): Number of tables consumers need to train
             k (int): Number of inputs for each table.
             binary_calculations (bool): Whether to force binary calculations - simulate real look up tabls -
+            input_expanded (bool): If set to True, means all LUT's inputs are considered during calculations , else only the first input will considered and the remaining will be masked.
+            base_initializer (BaseInitializer): An implementation for BaseInitializer interface , which can be used to intialize the lookup tables weights differently.
             device (str): device of the output tensor.
         """
-        self.binary_calculations = binary_calculations
         self.k = k
         self.kk = 2 ** k
+        self.binary_calculations = binary_calculations
         self.input_expanded = input_expanded
         self.tables_count = tables_count
         super(BaseTrainer, self).__init__(

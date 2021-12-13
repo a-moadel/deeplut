@@ -20,9 +20,11 @@ class LagrangeTrainer(BaseTrainer):
         """Lagrange Approximation is using Lagrange interpolation to represent differentiable look-up tables.
 
         Args:
-            tables_count (int): Number of look up tables to train
-            k (int): numper of inputs of each look up table
-            binary_calculations (bool): whether to force binary calculations - simulate real look up tabls -
+            tables_count (int): Number of tables consumers need to train
+            k (int): Number of inputs for each table.
+            binary_calculations (bool): Whether to force binary calculations - simulate real look up tabls -
+            input_expanded (bool): If set to True, means all LUT's inputs are considered during calculations , else only the first input will considered and the remaining will be masked.
+            base_initializer (BaseInitializer): An implementation for BaseInitializer interface , which can be used to intialize the lookup tables weights differently.
             device (str): device of the output tensor.
         """
         self.device = device
@@ -90,3 +92,27 @@ class LagrangeTrainer(BaseTrainer):
         out = self._binarize(out.sum(-1))
 
         return out
+
+    def generate_weight_lookup(self) -> None:
+        k = self.k
+        kk = self.kk
+        weight_lookup_table = dict()
+        weights = truth_table.generate_truth_table(
+            k=kk, tables_count=1, device=self.device
+        )
+        inputs = truth_table.generate_truth_table(k=k, tables_count=1, device=self.device)
+        with torch.no_grad():
+            for weight in weights.T:
+                output = []
+                for input in inputs.T:
+                    lut = LagrangeTrainer(
+                        tables_count=1,
+                        k=k,
+                        binary_calculations=True,
+                        input_expanded=True,
+                        device=self.device,
+                    )
+                    lut.weight.data = weight
+                    output.append(lut(input).item())
+                weight_lookup_table[tuple(output)] = weight.tolist()
+        return weight_lookup_table

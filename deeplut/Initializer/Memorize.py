@@ -1,7 +1,5 @@
-from deeplut.Initializer.BaseInitializer import BaseInitializer
-from deeplut.trainer.BaseTrainer import BaseTrainer
 from deeplut.nn.utils.truth_table import generate_truth_table
-from deeplut.trainer.LagrangeTrainer import LagrangeTrainer
+from deeplut.initializer.BaseInitializer import BaseInitializer
 from typing import Dict, Optional
 import torch
 import numpy as np
@@ -12,44 +10,49 @@ class Memorize(BaseInitializer):
     weight_lookup_table: Dict
 
     def __init__(
-        self, trainer: BaseTrainer, device: Optional[str] = None
+        self, table_count, k, kk, weight_lookup_table: Dict, device: Optional[str]
     ) -> None:
-        super().__init__(trainer, device)
+        super().__init__(table_count, k, kk,device)
+        self.weight_lookup_table = weight_lookup_table
 
     def _input_to_id(self, inputs: np.array) -> torch.Tensor:
-        _inputs = inputs.clone().detach()
+        # inputs.shape (batch, tablecount * k)
+        _inputs = inputs.clone().detach().view(-1, self.k)
         _inputs[_inputs == -1] = 0
-        power_arr = 2 ** torch.arange(_inputs.shape[-1])
-        power_arr = power_arr.reshape(-1, 1)
-        return (power_arr * _inputs).sum(0)
+        power_arr = 2 ** torch.arange(_inputs.shape[-1]).flip(0).view(-1, 1)
 
-    def generate_weight_lookup(self) -> None:
-        k = self.trainer.k
-        kk = self.trainer.kk
-        self.weight_lookup_table = dict()
-        weights = generate_truth_table(
-            k=kk, tables_count=1, device=self.device
-        )
-        inputs = generate_truth_table(k=k, tables_count=1, device=self.device)
-        with torch.no_grad():
-            for weight in weights.T:
-                output = []
-                for input in inputs.T:
-                    lut = LagrangeTrainer(
-                        tables_count=1,
-                        k=k,
-                        binary_calculations=True,
-                        input_expanded=True,
-                        device=self.device,
-                    )
-                    lut.weight.data = weight
-                    output.append(lut(input).item())
-                self.weight_lookup_table[tuple(output)] = weight.tolist()
+        return (power_arr.T * _inputs).sum(1).view(inputs.shape[0], -1)
 
     def clear(self) -> None:
-        self.counter = torch.zeros(self.trainer.tables_count)
+        self.counter = torch.zeros(self.table_count, self.kk)
 
-    def forward(self, x, expected):
+    def _update_counter(self, input_ids: torch.Tensor, target: torch.Tensor) -> None:
+        # input_ids.shape(batch, table_count)
+        # target.shape (batch,1)
+        batch_size = input_ids.shape[0]
+        table_count = input_ids.shape[1]
+
+        assert(table_count == self.table_count)
+
+        # convert target from 0,1 => -1,1
+        _target_value = (2 * target - 1).flatten()
+        # prepare for updating counter.
+        _target_value = _target_value.repeat(table_count, 1).T.flatten()
+
+        table_ids = torch.arange(table_count).repeat(batch_size)
+        self.counter[table_ids, input_ids.flatten()] += _target_value
+
+    def update_counter(self, x: torch.Tensor, target: torch.Tensor) -> None:
         with torch.no_grad():
-            self.counter += self.trainer(x)
-            x.view(-1, self.trainer.k)
+            input_ids = self._input_to_id(x)
+            self._update_counter(input_ids, target)
+
+    def update_luts_weights(self) -> torch.Tensor:
+        new_weights = []
+        for row in self.counter:
+            key = tuple(row.detach().cpu().flatten().sign().numpy().tolist())
+            value = self.weight_lookup_table[key]
+            new_weights.append(value)
+        new_weights = torch.tensor(
+            new_weights, dtype=torch.float32, requires_grad=True).view(-1, self.kk)
+        return new_weights

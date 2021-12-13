@@ -1,11 +1,11 @@
 from typing import Optional
-from deeplut.trainer.BaseTrainer import BaseTrainer
-
 
 class BaseInitializer:
-    trainer: BaseTrainer
     device: Optional[str]
 
-    def __init__(self, trainer: BaseTrainer, device: Optional[str]) -> None:
-        self.trainer = trainer
+    def __init__(self, table_count, k, kk, device: Optional[str]) -> None:
+        self.table_count = table_count
+        self.k = k
+        self.kk = kk
         self.device = device
+        
