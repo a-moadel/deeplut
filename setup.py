@@ -6,7 +6,7 @@ LONG_DESCRIPTION = "A Python library that aims to provide a flexible, extendible
 
 # Setting up
 setup(
-    # the name must match the folder name 'verysimplemodule'
+# the name must match the folder name 'verysimplemodule'
     name="deeplut",
     version=VERSION,
     author="Mohamed Adel",
