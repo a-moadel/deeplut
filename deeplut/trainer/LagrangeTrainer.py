@@ -1,6 +1,5 @@
 import torch
 from torch.functional import Tensor
-from deeplut import initializer
 from deeplut.nn.utils import truth_table
 from deeplut.trainer.BaseTrainer import BaseTrainer
 from deeplut.initializer.Memorize import Memorize
@@ -66,17 +65,24 @@ class LagrangeTrainer(BaseTrainer):
             input.data = torch.sign(input.data)
         return input
 
-    def forward(self, input: torch.tensor, targets: torch.tensor = None, initalize: bool = False) -> torch.Tensor:
-        if initalize and self.initializer != None and targets != None:
+    def forward(
+        self,
+        input: torch.tensor,
+        targets: torch.tensor = None,
+        initalize: bool = False,
+    ) -> torch.Tensor:
+        if initalize and self.initializer is not None and targets is not None:
             self.initializer.update_counter(input, targets)
         if not hasattr(self.weight, "org"):
             self.weight.org = self.weight.data.clone()
         self._validate_input(input)
         input = input.view(-1, self.k, 1)
-        input_mask = torch.ones_like(
-            input, requires_grad=False).to(self.device)
-        weight_mask = torch.ones_like(
-            self.weight, requires_grad=False).to(self.device)
+        input_mask = torch.ones_like(input, requires_grad=False).to(
+            self.device
+        )
+        weight_mask = torch.ones_like(self.weight, requires_grad=False).to(
+            self.device
+        )
         if not self.input_expanded:
             input_mask = torch.zeros_like(input)
             input_mask[:, :: self.k] = 1
@@ -84,7 +90,8 @@ class LagrangeTrainer(BaseTrainer):
             weight_mask[:, 0] = 1
 
         input_truth_table = self._binarize(
-            input * input_mask * self.truth_table + 1)
+            input * input_mask * self.truth_table + 1
+        )
 
         reduced_table = self._binarize(input_truth_table.prod(dim=-2))
         reduced_table = reduced_table.view(-1, self.tables_count, self.kk)
@@ -98,6 +105,5 @@ class LagrangeTrainer(BaseTrainer):
 
     # if we have more intitalizers , may be better we introduce builders for each base module , where we all the object creation logic should live.
     def set_memorize_as_initializer(self) -> None:
-        initializer = Memorize(
-            self.tables_count, self.k, self.kk, self.device)
+        initializer = Memorize(self.tables_count, self.k, self.kk, self.device)
         self.set_initializer(initializer=initializer)

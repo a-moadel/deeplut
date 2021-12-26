@@ -141,7 +141,12 @@ class Conv2d(torch.nn.Module):
         ) / self.stride[dim]
         return math.floor(_out + 1)
 
-    def forward(self, input: torch.Tensor, targets: torch.tensor=None, initalize: bool = False):
+    def forward(
+        self,
+        input: torch.Tensor,
+        targets: torch.tensor = None,
+        initalize: bool = False,
+    ):
         assert len(input.shape) == 4
         batch_size = input.shape[0]
         expanded_input = input[
@@ -150,11 +155,15 @@ class Conv2d(torch.nn.Module):
             self.input_mask[:, 1],
             self.input_mask[:, 2],
         ]
-        output = self.trainer(expanded_input,targets, initalize).squeeze()
+        output = self.trainer(expanded_input, targets, initalize).squeeze()
         output = output.view(batch_size, -1)
         assert output.shape[-1] == self.tables_count
         output = output.view(
-            batch_size, self.out_channels, self._out_dim(0), self._out_dim(1), -1
+            batch_size,
+            self.out_channels,
+            self._out_dim(0),
+            self._out_dim(1),
+            -1,
         )
         output = output.sum(-1)
         return output
@@ -170,6 +179,6 @@ class Conv2d(torch.nn.Module):
 
     def pre_initialize(self):
         self.trainer.clear_initializion()
-    
+
     def update_initialized_weights(self):
         self.trainer.update_initialized_weights()

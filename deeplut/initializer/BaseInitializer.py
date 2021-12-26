@@ -1,5 +1,6 @@
-from typing import Optional
 from typing import Dict, Optional
+import torch
+
 
 class BaseInitializer:
     device: Optional[str]
@@ -9,4 +10,6 @@ class BaseInitializer:
         self.k = k
         self.kk = kk
         self.device = device
-        
+
+    def update_counter(self, x: torch.Tensor, target: torch.Tensor) -> None:
+        return

@@ -47,7 +47,7 @@ class Linear(torch.nn.Module):
             input_expanded=input_expanded,
             device=device,
         )
-                
+
         self.bias = (
             torch.nn.Linear(1, out_features, device=device).bias
             if bias
@@ -71,8 +71,13 @@ class Linear(torch.nn.Module):
             )
             result.append(self.mask_builder.build())
         return np.concatenate(result)
-            
-    def forward(self, input: torch.Tensor, targets: torch.tensor=None, initalize: bool = False):
+
+    def forward(
+        self,
+        input: torch.Tensor,
+        targets: torch.tensor = None,
+        initalize: bool = False,
+    ):
         assert len(input.shape) == 2
         batch_size = input.shape[0]
         expanded_input = input[:, self.input_mask]
@@ -97,9 +102,9 @@ class Linear(torch.nn.Module):
             input_expanded (bool): boolean value of the new input_expanded.
         """
         self.trainer.set_input_expanded(input_expanded)
-    
+
     def pre_initialize(self):
         self.trainer.clear_initializion()
-    
+
     def update_initialized_weights(self):
         self.trainer.update_initialized_weights()

@@ -1,7 +1,7 @@
 import torch
-from typing import Optional
 from deeplut.initializer.BaseInitializer import BaseInitializer
 from typing import Optional
+
 
 class BaseTrainer(torch.nn.Linear):
     """This class is the base class for trainers. provide a consistent interface for different ways of tables approximation."""
@@ -12,6 +12,7 @@ class BaseTrainer(torch.nn.Linear):
     input_expanded: bool
     tables_count: int
     initializer: BaseInitializer
+
     def __init__(
         self,
         tables_count: int,
@@ -34,7 +35,7 @@ class BaseTrainer(torch.nn.Linear):
         self.binary_calculations = binary_calculations
         self.input_expanded = input_expanded
         self.tables_count = tables_count
-        
+
         super(BaseTrainer, self).__init__(
             in_features=self.kk,
             out_features=tables_count,
@@ -58,14 +59,14 @@ class BaseTrainer(torch.nn.Linear):
             input_expanded (bool): boolean value of the new input_expanded.
         """
         self.input_expanded = input_expanded
-    
+
     def set_initializer(self, initializer: BaseInitializer) -> None:
         self.initializer = initializer
-    
+
     def clear_initializion(self):
-        if self.initializer != None:
+        if self.initializer is not None:
             self.initializer.clear()
-    
+
     def update_initialized_weights(self):
-        if self.initializer != None:
-            self.weight.data = self.initializer.update_luts_weights()       
+        if self.initializer is not None:
+            self.weight.data = self.initializer.update_luts_weights()
