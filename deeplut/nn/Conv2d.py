@@ -1,5 +1,4 @@
 import torch
-from deeplut.trainer.LagrangeTrainer import LagrangeTrainer
 from deeplut.trainer.BaseTrainer import BaseTrainer
 
 from deeplut.mask.MaskBase import MaskBase
@@ -125,7 +124,7 @@ class Conv2d(torch.nn.Module):
 
     def _input_mask_builder(self) -> torch.Tensor:
         result = []
-        for output_channel in range(self.out_channels):
+        for _ in range(self.out_channels):
             selections = self._table_input_selections_builder()
             self.mask_builder = self.mask_builder_type(
                 self.k, selections, True
@@ -133,25 +132,21 @@ class Conv2d(torch.nn.Module):
             result.append(self.mask_builder.build())
         return np.concatenate(result)
 
-    def _hout(self):
-        _h_out = (
-            self.input_dim[0]
-            + 2 * self.padding[0]
-            - self.dilation[0] * (self.kernel_size[0] - 1)
+    def _out_dim(self, dim):
+        _out = (
+            self.input_dim[dim]
+            + 2 * self.padding[dim]
+            - self.dilation[dim] * (self.kernel_size[dim] - 1)
             - 1
-        ) / self.stride[0]
-        return math.floor(_h_out + 1)
+        ) / self.stride[dim]
+        return math.floor(_out + 1)
 
-    def _wout(self):
-        _w_out = (
-            self.input_dim[1]
-            + 2 * self.padding[1]
-            - self.dilation[1] * (self.kernel_size[1] - 1)
-            - 1
-        ) / self.stride[1]
-        return math.floor(_w_out + 1)
-
-    def forward(self, input: torch.Tensor):
+    def forward(
+        self,
+        input: torch.Tensor,
+        targets: torch.tensor = None,
+        initalize: bool = False,
+    ):
         assert len(input.shape) == 4
         batch_size = input.shape[0]
         expanded_input = input[
@@ -160,11 +155,15 @@ class Conv2d(torch.nn.Module):
             self.input_mask[:, 1],
             self.input_mask[:, 2],
         ]
-        output = self.trainer(expanded_input).squeeze()
+        output = self.trainer(expanded_input, targets, initalize).squeeze()
         output = output.view(batch_size, -1)
         assert output.shape[-1] == self.tables_count
         output = output.view(
-            batch_size, self.out_channels, self._hout(), self._wout(), -1
+            batch_size,
+            self.out_channels,
+            self._out_dim(0),
+            self._out_dim(1),
+            -1,
         )
         output = output.sum(-1)
         return output
@@ -177,3 +176,9 @@ class Conv2d(torch.nn.Module):
             input_expanded (bool): boolean value of the new input_expanded.
         """
         self.trainer.set_input_expanded(input_expanded)
+
+    def pre_initialize(self):
+        self.trainer.clear_initializion()
+
+    def update_initialized_weights(self):
+        self.trainer.update_initialized_weights()

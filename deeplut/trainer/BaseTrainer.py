@@ -1,4 +1,5 @@
 import torch
+from deeplut.initializer.BaseInitializer import BaseInitializer
 from typing import Optional
 
 
@@ -10,6 +11,7 @@ class BaseTrainer(torch.nn.Linear):
     kk: int
     input_expanded: bool
     tables_count: int
+    initializer: BaseInitializer
 
     def __init__(
         self,
@@ -25,13 +27,15 @@ class BaseTrainer(torch.nn.Linear):
             tables_count (int): Number of tables consumers need to train
             k (int): Number of inputs for each table.
             binary_calculations (bool): Whether to force binary calculations - simulate real look up tabls -
+            input_expanded (bool): If set to True, means all LUT's inputs are considered during calculations , else only the first input will considered and the remaining will be masked.
             device (str): device of the output tensor.
         """
-        self.binary_calculations = binary_calculations
         self.k = k
         self.kk = 2 ** k
+        self.binary_calculations = binary_calculations
         self.input_expanded = input_expanded
         self.tables_count = tables_count
+
         super(BaseTrainer, self).__init__(
             in_features=self.kk,
             out_features=tables_count,
@@ -55,3 +59,14 @@ class BaseTrainer(torch.nn.Linear):
             input_expanded (bool): boolean value of the new input_expanded.
         """
         self.input_expanded = input_expanded
+
+    def set_initializer(self, initializer: BaseInitializer) -> None:
+        self.initializer = initializer
+
+    def clear_initializion(self):
+        if self.initializer is not None:
+            self.initializer.clear()
+
+    def update_initialized_weights(self):
+        if self.initializer is not None:
+            self.weight.data = self.initializer.update_luts_weights()

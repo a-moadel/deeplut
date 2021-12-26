@@ -1,7 +1,9 @@
 import torch
+from torch.functional import Tensor
 from deeplut.nn.utils import truth_table
 from deeplut.trainer.BaseTrainer import BaseTrainer
-from typing import Optional
+from deeplut.initializer.Memorize import Memorize
+from typing import Optional, Type
 
 
 class LagrangeTrainer(BaseTrainer):
@@ -20,14 +22,14 @@ class LagrangeTrainer(BaseTrainer):
         """Lagrange Approximation is using Lagrange interpolation to represent differentiable look-up tables.
 
         Args:
-            tables_count (int): Number of look up tables to train
-            k (int): numper of inputs of each look up table
-            binary_calculations (bool): whether to force binary calculations - simulate real look up tabls -
+            tables_count (int): Number of tables consumers need to train
+            k (int): Number of inputs for each table.
+            binary_calculations (bool): Whether to force binary calculations - simulate real look up tabls -
+            input_expanded (bool): If set to True, means all LUT's inputs are considered during calculations , else only the first input will considered and the remaining will be masked.
             device (str): device of the output tensor.
         """
         self.device = device
         self.truth_table = truth_table.generate_truth_table(k, 1, device)
-
         super(LagrangeTrainer, self).__init__(
             tables_count=tables_count,
             k=k,
@@ -63,14 +65,24 @@ class LagrangeTrainer(BaseTrainer):
             input.data = torch.sign(input.data)
         return input
 
-    def forward(self, input: torch.tensor):
-
+    def forward(
+        self,
+        input: torch.tensor,
+        targets: torch.tensor = None,
+        initalize: bool = False,
+    ) -> torch.Tensor:
+        if initalize and self.initializer is not None and targets is not None:
+            self.initializer.update_counter(input, targets)
         if not hasattr(self.weight, "org"):
             self.weight.org = self.weight.data.clone()
         self._validate_input(input)
         input = input.view(-1, self.k, 1)
-        input_mask = torch.ones_like(input, requires_grad=False)
-        weight_mask = torch.ones_like(self.weight, requires_grad=False)
+        input_mask = torch.ones_like(input, requires_grad=False).to(
+            self.device
+        )
+        weight_mask = torch.ones_like(self.weight, requires_grad=False).to(
+            self.device
+        )
         if not self.input_expanded:
             input_mask = torch.zeros_like(input)
             input_mask[:, :: self.k] = 1
@@ -78,7 +90,7 @@ class LagrangeTrainer(BaseTrainer):
             weight_mask[:, 0] = 1
 
         input_truth_table = self._binarize(
-            input * input_mask + self.truth_table
+            input * input_mask * self.truth_table + 1
         )
 
         reduced_table = self._binarize(input_truth_table.prod(dim=-2))
@@ -90,3 +102,8 @@ class LagrangeTrainer(BaseTrainer):
         out = self._binarize(out.sum(-1))
 
         return out
+
+    # if we have more intitalizers , may be better we introduce builders for each base module , where we all the object creation logic should live.
+    def set_memorize_as_initializer(self) -> None:
+        initializer = Memorize(self.tables_count, self.k, self.kk, self.device)
+        self.set_initializer(initializer=initializer)
