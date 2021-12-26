@@ -8,24 +8,22 @@ import random
 
 class Memorize(BaseInitializer):
     counter: np.ndarray
-    weight_lookup_table: Dict
 
     def __init__(
-        self, table_count, k, kk, weight_lookup_table: Dict, device: Optional[str]
+        self, table_count, k, kk, device: Optional[str]
     ) -> None:
-        super().__init__(table_count, k, kk, weight_lookup_table,device)
+        super().__init__(table_count, k, kk,device)
         
 
     def _input_to_id(self, inputs: np.array) -> torch.Tensor:
         # inputs.shape (batch, tablecount * k)
         _inputs = inputs.sign().clone().detach().view(-1, self.k)
         _inputs[_inputs == -1] = 0
-        power_arr = 2 ** torch.arange(_inputs.shape[-1]).flip(0).view(-1, 1)
-
-        return (power_arr.T * _inputs).sum(1).view(inputs.shape[0], -1)
+        power_arr = 2 ** torch.arange(_inputs.shape[-1]).flip(0).view(-1, 1).to(self.device)
+        return (power_arr.T * _inputs).sum(1).view(inputs.shape[0], -1).to(self.device)
 
     def clear(self) -> None:
-        self.counter = torch.zeros(self.table_count, self.kk)
+        self.counter = torch.zeros(self.table_count, self.kk, device=self.device).int()
 
     def _update_counter(self, input_ids: torch.Tensor, target: torch.Tensor) -> None:
         # input_ids.shape(batch, table_count)
@@ -38,7 +36,7 @@ class Memorize(BaseInitializer):
         # convert target from 0,1 => -1,1
         _target_value = (2 * target - 1).flatten()
         # prepare for updating counter.
-        _target_value = _target_value.repeat(table_count, 1).T.flatten()
+        _target_value = _target_value.repeat(table_count, 1).T.flatten().int()
 
         table_ids = torch.arange(table_count).repeat(batch_size)
         self.counter[table_ids.long(), input_ids.long().flatten()] += _target_value
@@ -52,11 +50,9 @@ class Memorize(BaseInitializer):
         new_weights = []
         for row in self.counter:
             key = row.detach().cpu().flatten().sign().numpy().tolist() 
-            key = self._break_ties_in_key(key)
-            value = self.weight_lookup_table[key]
-            new_weights.append(value)
+            new_weights.append(key)
         new_weights = torch.tensor(
-            new_weights, dtype=torch.float32, requires_grad=True).view(-1, self.kk)
+            new_weights, dtype=torch.float32, requires_grad=True,device=self.device).view(-1, self.kk)
         return new_weights
 
     def _break_ties_in_key(self,key):

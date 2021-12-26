@@ -109,9 +109,6 @@ def evaluate(model, device, test_loader):
             zs += torch.sum(target==0)
             ones += torch.sum(target==1)
     tmp = correct/total
-    print(tmp)
-    print(zs)
-    print(ones)
     return correct,total
 
 
@@ -121,7 +118,7 @@ class Test_TrainMNIST(unittest.TestCase):
         dataset.targets = dataset.targets[idx]
         dataset.data = dataset.data[idx]  
         return dataset
-    def test_train_minist(self):
+    def ignore_train_minist(self):
         kwargs = {"batch_size": 64}
         transform = transforms.Compose(
             [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]

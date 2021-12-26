@@ -105,13 +105,16 @@ class test_LagrangeTrainer(unittest.TestCase):
         )
 
     def test_generate_weight_lookup_k_2(self):
-        trainer = LagrangeTrainer(1,2,True,True,None)
+        trainer = LagrangeTrainer(1, 2, True, True, None)
         weight_lookup_table = trainer.generate_weight_lookup()
-        inputs = truth_table.generate_truth_table(k=2, tables_count=1, device=None)
+        inputs = truth_table.generate_truth_table(
+            k=2, tables_count=1, device=None)
         for expected_output, weights in weight_lookup_table.items():
-            trainer.weight.data = torch.tensor(weights,dtype= torch.float32,requires_grad=True)
-            actual_output = trainer(inputs.T).detach().cpu().int().flatten().numpy().tolist()
-            self.assertEqual(list(expected_output),actual_output)
+            trainer.weight.data = torch.tensor(
+                weights, dtype=torch.float32, requires_grad=True)
+            actual_output = trainer(inputs.T).detach(
+            ).cpu().int().flatten().numpy().tolist()
+            self.assertEqual(list(expected_output), actual_output)
 
     def random_testing_seeded(self, k, iterations_count):
         maximum_batch_size = 100
@@ -179,32 +182,32 @@ class test_LagrangeTrainer(unittest.TestCase):
     def lagrange_calcs_k_2(self, weights, inputs):
 
         return (
-            weights[0] * (inputs[0] - 1) * (inputs[1] - 1)
-            + weights[1] * (inputs[0] - 1) * (inputs[1] + 1)
-            + weights[2] * (inputs[0] + 1) * (inputs[1] - 1)
-            + weights[3] * (inputs[0] + 1) * (inputs[1] + 1)
+              weights[0] * (1 - inputs[0]) * (1 - inputs[1])
+            + weights[1] * (1 - inputs[0]) * (1 + inputs[1])
+            + weights[2] * (1 + inputs[0]) * (1 - inputs[1])
+            + weights[3] * (1 + inputs[0]) * (1 + inputs[1])
         )
 
     def lagrange_calcs_k_3(self, weights, inputs):
 
         return (
-            weights[0] * (inputs[0] - 1) * (inputs[1] - 1) * (inputs[2] - 1)
-            + weights[1] * (inputs[0] - 1) * (inputs[1] - 1) * (inputs[2] + 1)
-            + weights[2] * (inputs[0] - 1) * (inputs[1] + 1) * (inputs[2] - 1)
-            + weights[3] * (inputs[0] - 1) * (inputs[1] + 1) * (inputs[2] + 1)
-            + weights[4] * (inputs[0] + 1) * (inputs[1] - 1) * (inputs[2] - 1)
-            + weights[5] * (inputs[0] + 1) * (inputs[1] - 1) * (inputs[2] + 1)
-            + weights[6] * (inputs[0] + 1) * (inputs[1] + 1) * (inputs[2] - 1)
-            + weights[7] * (inputs[0] + 1) * (inputs[1] + 1) * (inputs[2] + 1)
+              weights[0] * (1 -inputs[0]) * (1 -inputs[1]) * (1 - inputs[2])
+            + weights[1] * (1- inputs[0]) * (1 - inputs[1]) * (1 + inputs[2])
+            + weights[2] * (1- inputs[0]) * (1 + inputs[1]) * (1 - inputs[2])
+            + weights[3] * (1- inputs[0]) * (1 + inputs[1]) * (1 + inputs[2])
+            + weights[4] * (1 + inputs[0]) * (1 - inputs[1]) * (1 - inputs[2])
+            + weights[5] * (1 + inputs[0]) * (1 - inputs[1]) * (1 + inputs[2])
+            + weights[6] * (1 + inputs[0]) * (1 + inputs[1]) * (1 - inputs[2])
+            + weights[7] * (1 + inputs[0]) * (1 + inputs[1]) * (1 + inputs[2])
         )
 
     def lagrange_calcs_k_2_not_expanded(self, weights, inputs):
 
-        return weights[0] * (inputs[0] - 1) * (-1)
+        return weights[0] * (1 - inputs[0])
 
     def lagrange_calcs_k_3_not_expanded(self, weights, inputs):
 
-        return weights[0] * (inputs[0] - 1)
+        return weights[0] * (1 - inputs[0])
 
 
 if __name__ == "__main__":

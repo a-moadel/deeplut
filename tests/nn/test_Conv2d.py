@@ -7,6 +7,7 @@ import unittest
 
 
 class test_Conv2d(unittest.TestCase):
+
     def test_get_conv_index_start_at_dilation_1_1(self):
         np.random.seed(0)
         conv2d = Conv2d(

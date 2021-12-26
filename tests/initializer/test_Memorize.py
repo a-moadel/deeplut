@@ -13,7 +13,7 @@ class test_Memorize(unittest.TestCase):
     def test_input_to_id_one_by_one(self):
         trainer = LagrangeTrainer(1, 2, True, True, None)
         memorize_initializer = Memorize(
-            trainer.tables_count, trainer.k, trainer.kk, trainer.generate_weight_lookup(), None)
+            trainer.tables_count, trainer.k, trainer.kk, None)
         inputs = truth_table.generate_truth_table(
             k=2, tables_count=1, device=None).T
         for expected_id in range(4):
@@ -24,7 +24,7 @@ class test_Memorize(unittest.TestCase):
     def test_input_to_id_vectorized(self):
         trainer = LagrangeTrainer(1, 2, True, True, None)
         memorize_initializer = Memorize(
-            trainer.tables_count, trainer.k, trainer.kk, trainer.generate_weight_lookup(), None)
+            trainer.tables_count, trainer.k, trainer.kk, None)
         inputs = truth_table.generate_truth_table(
             k=2, tables_count=1, device=None).T
         actual_id = memorize_initializer._input_to_id(inputs)
@@ -33,7 +33,7 @@ class test_Memorize(unittest.TestCase):
     def test_input_to_id_vectorized_mutiple_tables(self):
         trainer = LagrangeTrainer(1, 2, True, True, None)
         memorize_initializer = Memorize(
-            trainer.tables_count, trainer.k, trainer.kk, trainer.generate_weight_lookup(), None)
+            trainer.tables_count, trainer.k, trainer.kk, None)
         inputs = truth_table.generate_truth_table(
             k=2, tables_count=1, device=None).T.repeat(2, 2)
         actual_id = memorize_initializer._input_to_id(inputs)
@@ -44,7 +44,7 @@ class test_Memorize(unittest.TestCase):
     def test_update_tables_weights(self):
         trainer = LagrangeTrainer(1, 2, True, True, None)
         memorize_initializer = Memorize(
-            trainer.tables_count, trainer.k, trainer.kk, trainer.generate_weight_lookup(), None)
+            trainer.tables_count, trainer.k, trainer.kk, None)
         inputs = truth_table.generate_truth_table(
             k=2, tables_count=1, device=None).T
         targets = torch.tensor([0, 0, 1, 0]).view(4, 1)
@@ -61,7 +61,7 @@ class test_Memorize(unittest.TestCase):
     def test_update_tables_weights_can_not_decide_senario(self):
         trainer = LagrangeTrainer(1, 2, True, True, None)
         memorize_initializer = Memorize(
-            trainer.tables_count, trainer.k, trainer.kk, trainer.generate_weight_lookup(), None)
+            trainer.tables_count, trainer.k, trainer.kk, None)
         inputs = torch.tensor([[-1,1],[-1,1],[1,1],[1,1]])
         targets = torch.tensor([0, 1, 0, 1]).view(4, 1)
         memorize_initializer.clear()
