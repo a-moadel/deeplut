@@ -3,13 +3,19 @@ Welcome to DeepLUT
 
 Contents:
 <!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
-* [About the Team](#about-the-team)
+* [General](#General)
 * [What is DeepLut?](#what-is-deeplut)
 * [Why DeepLut is needed?](#why-deeplut-is-needed)
 <!-- /TOC -->
-## About the Team
+
+## General
+
+* [Documentation](https://deeplut.github.io/).
 
 ## What is DeepLut?
+
+![Deeplut Architecture](images/architecture.jpeg)
+
 A Python library that aims to provide a flexible, extendible, lightening fast, and easy-to-use framework to train look-up tables (LUT) deep neural networks from scratch.
 
 ## Why DeepLut is needed?
