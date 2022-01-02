@@ -6,6 +6,7 @@ Contents:
 <!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 * [What is DeepLut?](#what-is-deeplut)
 * [Why DeepLut is needed?](#why-deeplut-is-needed)
+* [Code Examples](#code-examples)
 <!-- /TOC -->
 
 ## What is DeepLut?
@@ -33,3 +34,54 @@ Deeplut is organized in the following modules
 
 ## Why DeepLut is needed?
 We believe having a flexible, extendible, fast, and easy framework will help in advancing the research in this area. Frameworks enable innovation and make researchers focus on experimentation. Extendible will help in building an ecosystem between researchers to add plugins and implement innovative modules to benefit all other researchers.
+
+## Code Examples
+
+### Imports
+
+```python
+import torch
+import torch.nn as nn
+from deeplut.nn.Linear import Linear as dLinear
+from deeplut.optim.OptimWrapper import OptimWrapper as dOptimWrapper
+from deeplut.trainer.LagrangeTrainer import LagrangeTrainer
+from deeplut.mask.MaskExpanded import MaskExpanded
+```
+
+### Model
+
+```python 
+
+class LFC(nn.Module):
+    def __init__(self, k,input_expanded, mask_builder_type, device):
+        super(LFC, self).__init__()
+        self.layers = nn.Sequential(
+          nn.Flatten(),
+          Linear(784,256),
+          nn.BatchNorm1d(256),
+          nn.ReLU(),     
+          dLinear(256,256,k=k,binary_calculations=True,input_expanded=input_expanded,trainer_type=LagrangeTrainer, mask_builder_type=mask_builder_type,bias=False,device=device),
+          nn.BatchNorm1d(256),
+          nn.ReLU(),   
+          dLinear(256,256,k=k,binary_calculations=True,input_expanded=input_expanded,trainer_type=LagrangeTrainer, mask_builder_type=mask_builder_type,bias=False,device=device),
+          nn.BatchNorm1d(256),
+          nn.ReLU(),  
+          dLinear(256,256,k=k,binary_calculations=True,input_expanded=input_expanded,trainer_type=LagrangeTrainer, mask_builder_type=mask_builder_type,bias=False,device=device),
+          nn.BatchNorm1d(256),
+          nn.ReLU(),       
+          dLinear(256,10,k=k,binary_calculations=True,input_expanded=input_expanded,trainer_type=LagrangeTrainer, mask_builder_type=mask_builder_type,bias=False,device=device),
+          nn.BatchNorm1d(10),  
+          )
+```
+
+### Optimizer
+```python
+_optim = optim.Adam(model.parameters(), lr=0.01)
+optimizer = dOptimWrapper(_optim, BinaryOptim = True)
+```
+
+### Main
+
+```python
+model = LFC(k=2, input_expanded = True, mask_builder_type=MaskExpanded, device= None)
+```
