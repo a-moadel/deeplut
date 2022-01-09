@@ -42,6 +42,7 @@ class BaseTrainer(torch.nn.Linear):
             bias=False,
             device=device,
         )
+        self.set_input_expanded(input_expanded)
 
     def set_binary_calculations(self, binary_calculations: bool) -> None:
         """binary calculations
@@ -59,6 +60,10 @@ class BaseTrainer(torch.nn.Linear):
             input_expanded (bool): boolean value of the new input_expanded.
         """
         self.input_expanded = input_expanded
+        
+        if not self.input_expanded:
+            self.weight_mask = torch.zeros_like(self.weight)
+            self.weight_mask[:, 0] = 1
 
     def set_initializer(self, initializer: BaseInitializer) -> None:
         self.initializer = initializer

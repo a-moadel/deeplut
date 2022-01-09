@@ -29,7 +29,8 @@ class LagrangeTrainer(BaseTrainer):
             device (str): device of the output tensor.
         """
         self.device = device
-        self.truth_table = truth_table.generate_truth_table(k, 1, device)
+        self.truth_table = truth_table.generate_truth_table(
+            k, 1, device)
         super(LagrangeTrainer, self).__init__(
             tables_count=tables_count,
             k=k,
@@ -37,6 +38,7 @@ class LagrangeTrainer(BaseTrainer):
             input_expanded=input_expanded,
             device=device,
         )
+        
 
     def _validate_input(self, input: torch.tensor):
         """validate inputs dim before passing throw LUTs
@@ -77,26 +79,16 @@ class LagrangeTrainer(BaseTrainer):
             self.weight.org = self.weight.data.clone()
         self._validate_input(input)
         input = input.view(-1, self.k, 1)
-        input_mask = torch.ones_like(input, requires_grad=False).to(
-            self.device
-        )
-        weight_mask = torch.ones_like(self.weight, requires_grad=False).to(
-            self.device
-        )
-        if not self.input_expanded:
-            input_mask = torch.zeros_like(input)
-            input_mask[:, :: self.k] = 1
-            weight_mask = torch.zeros_like(self.weight)
-            weight_mask[:, 0] = 1
-
-        input_truth_table = self._binarize(
-            input * input_mask * self.truth_table + 1
-        )
-
+        input_truth_table = self._binarize(1 + input * self.truth_table)
         reduced_table = self._binarize(input_truth_table.prod(dim=-2))
         reduced_table = reduced_table.view(-1, self.tables_count, self.kk)
 
-        out = reduced_table * self._binarize(self.weight * weight_mask)
+        if not self.input_expanded:
+            out = reduced_table * \
+                self._binarize(self.weight * self.weight_mask)
+        else:
+            out = reduced_table * self._binarize(self.weight)
+
         out = self._binarize(out)
 
         out = self._binarize(out.sum(-1))
