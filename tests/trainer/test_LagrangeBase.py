@@ -76,12 +76,6 @@ class test_LagrangeTrainer(unittest.TestCase):
             (np.array([output_0, output_1]) == output.data.numpy()).all()
         )
 
-    def test_random_large_test_seeded_k_2(self):
-        self.random_testing_seeded(k=2, iterations_count=20)
-
-    def test_random_large_test_seeded_k_3(self):
-        self.random_testing_seeded(k=3, iterations_count=20)
-
     def test_forward_two_tables_one_input_k_2_input_not_expanded(self):
         lagrangeTrainer = LagrangeTrainer(
             tables_count=2,
@@ -191,11 +185,11 @@ class test_LagrangeTrainer(unittest.TestCase):
 
     def lagrange_calcs_k_2_not_expanded(self, weights, inputs):
 
-        return weights[0] * (1 - inputs[0])
+        return weights[0] * (1 - inputs[0]) * (1 - inputs[1])
 
     def lagrange_calcs_k_3_not_expanded(self, weights, inputs):
 
-        return weights[0] * (1 - inputs[0])
+        return weights[0] * (1 - inputs[0]) * (1 - inputs[1]) * (1 - inputs[2])
 
 
 if __name__ == "__main__":
