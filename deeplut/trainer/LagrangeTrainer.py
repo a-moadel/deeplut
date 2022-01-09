@@ -29,8 +29,7 @@ class LagrangeTrainer(BaseTrainer):
             device (str): device of the output tensor.
         """
         self.device = device
-        self.truth_table = truth_table.generate_truth_table(
-            k, 1, device)
+        self.truth_table = truth_table.generate_truth_table(k, 1, device)
         super(LagrangeTrainer, self).__init__(
             tables_count=tables_count,
             k=k,
@@ -38,7 +37,6 @@ class LagrangeTrainer(BaseTrainer):
             input_expanded=input_expanded,
             device=device,
         )
-        
 
     def _validate_input(self, input: torch.tensor):
         """validate inputs dim before passing throw LUTs
@@ -84,8 +82,9 @@ class LagrangeTrainer(BaseTrainer):
         reduced_table = reduced_table.view(-1, self.tables_count, self.kk)
 
         if not self.input_expanded:
-            out = reduced_table * \
-                self._binarize(self.weight * self.weight_mask)
+            out = reduced_table * self._binarize(
+                self.weight * self.weight_mask
+            )
         else:
             out = reduced_table * self._binarize(self.weight)
 

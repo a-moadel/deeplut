@@ -60,7 +60,7 @@ class BaseTrainer(torch.nn.Linear):
             input_expanded (bool): boolean value of the new input_expanded.
         """
         self.input_expanded = input_expanded
-        
+
         if not self.input_expanded:
             self.weight_mask = torch.zeros_like(self.weight)
             self.weight_mask[:, 0] = 1
