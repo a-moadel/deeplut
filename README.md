@@ -1,4 +1,4 @@
-# DeepLut : DeepLUT: an End-to-End Library for Training Lookup Tables
+# DeepLUT: an End-to-End Library for Training Lookup Tables
 
 Welcome to DeepLUT
 
