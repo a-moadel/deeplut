@@ -185,7 +185,7 @@ class test_LagrangeTrainer(unittest.TestCase):
 
     def lagrange_calcs_k_2_not_expanded(self, weights, inputs):
 
-        return weights[0] * (1 - inputs[0]) * (1 - inputs[1])
+        return weights[0] * inputs[0]
 
     def lagrange_calcs_k_3_not_expanded(self, weights, inputs):
 
