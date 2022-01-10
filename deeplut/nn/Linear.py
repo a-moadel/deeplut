@@ -94,15 +94,6 @@ class Linear(torch.nn.Module):
             output = output + self.bias
         return output
 
-    def set_input_expanded(self, input_expanded: bool) -> None:
-        """Set the value for input expansion, either we use expanded input for not, using expanded input means we only consider first input for each lut.
-           Please note that this not applicable if you are using minimal look up tables setup.
-
-        Args:
-            input_expanded (bool): boolean value of the new input_expanded.
-        """
-        self.trainer.set_input_expanded(input_expanded)
-
     def pre_initialize(self):
         self.trainer.clear_initializion()
 
