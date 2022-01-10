@@ -55,9 +55,6 @@ class Conv2d(torch.nn.Module):
         self.padding = torch.nn.modules.utils._pair(padding)
         self.dilation = torch.nn.modules.utils._pair(dilation)
 
-        self.unfold = torch.nn.Unfold(
-            kernel_size=kernel_size, dilation=dilation, padding=padding, stride=stride)
-
         self.mask_builder_type = mask_builder_type
 
         self.groups = torch.nn.modules.utils._pair(groups)
@@ -74,6 +71,21 @@ class Conv2d(torch.nn.Module):
             binary_calculations=binary_calculations,
             input_expanded=input_expanded,
             device=device,
+        )
+
+        self.unfold = torch.nn.Unfold(
+            kernel_size=kernel_size,
+            dilation=dilation,
+            padding=padding,
+            stride=stride,
+        )
+
+        self.fold = torch.nn.Fold(
+            output_size=(self._out_dim(0), self._out_dim(1)),
+            kernel_size=kernel_size,
+            dilation=dilation,
+            padding=padding,
+            stride=stride,
         )
 
     def _get_kernel_selections(self, channel_id):
@@ -98,9 +110,7 @@ class Conv2d(torch.nn.Module):
     def _input_mask_builder(self) -> torch.Tensor:
         result = []
         selections = self._table_input_selections()
-        self.mask_builder = self.mask_builder_type(
-            self.k, selections, True
-        )
+        self.mask_builder = self.mask_builder_type(self.k, selections, True)
         result.append(self.mask_builder.build())
         return np.concatenate(result)
 
@@ -123,18 +133,38 @@ class Conv2d(torch.nn.Module):
         batch_size = input.shape[0]
         folded_input = self.unfold(input).transpose(1, 2)
         folded_input = folded_input.view(
-            batch_size, -1, self.in_channels, self.kernel_size[0], self.kernel_size[1])
-        expanded_input = folded_input[:,:,self.input_mask[:, 0],self.input_mask[:, 1],self.input_mask[:, 2]]
-        output = self.trainer(expanded_input, targets, initalize).squeeze()
-        output = output.view(batch_size, -1)
-        output = output.view(
             batch_size,
-            self.out_channels,
-            self._out_dim(0),
-            self._out_dim(1),
             -1,
+            self.in_channels,
+            self.kernel_size[0],
+            self.kernel_size[1],
         )
-        output = output.sum(-1)
+        expanded_input = folded_input[
+            :,
+            :,
+            self.input_mask[:, 0],
+            self.input_mask[:, 1],
+            self.input_mask[:, 2],
+        ]
+        output = self.trainer(expanded_input, targets, initalize).squeeze()
+        output = (
+            output.contiguous()
+            .view(
+                batch_size,
+                self.out_channels,
+                self._out_dim(0),
+                self._out_dim(1),
+                -1,
+            )
+            .sum(-1)
+        )
+        output = output.view(
+            batch_size, self._out_dim(0) * self._out_dim(1), -1
+        ).transpose(1, 2)
+        output = output.contiguous().view(
+            batch_size, self.out_channels, self._out_dim(0), self._out_dim(1)
+        )
+
         return output
 
     def pre_initialize(self):

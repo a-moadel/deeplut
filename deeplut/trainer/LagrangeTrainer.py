@@ -77,8 +77,13 @@ class LagrangeTrainer(BaseTrainer):
             self.weight.org = self.weight.data.clone()
         self._validate_input(input)
         input = input.view(-1, self.k, 1)
-        input_truth_table = self._binarize(1 + input * self.truth_table)
-        reduced_table = self._binarize(input_truth_table.prod(dim=-2))
+        input_truth_table = self._binarize(input * self.truth_table)
+        if not self.input_expanded:
+            input_truth_table *= -1
+            reduced_table = self._binarize(input_truth_table[:, 0, :])
+        else:
+            input_truth_table = self._binarize(1 + input_truth_table)
+            reduced_table = self._binarize(input_truth_table.prod(dim=-2))
         reduced_table = reduced_table.view(-1, self.tables_count, self.kk)
 
         if not self.input_expanded:
