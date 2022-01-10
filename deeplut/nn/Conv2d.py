@@ -147,21 +147,17 @@ class Conv2d(torch.nn.Module):
             self.input_mask[:, 2],
         ]
         output = self.trainer(expanded_input, targets, initalize).squeeze()
-        output = (
-            output.contiguous()
-            .view(
-                batch_size,
-                self.out_channels,
-                self._out_dim(0),
-                self._out_dim(1),
-                -1,
-            )
-            .sum(-1)
-        )
+        output = output.view(
+            batch_size,
+            self.out_channels,
+            self._out_dim(0),
+            self._out_dim(1),
+            -1,
+        ).sum(-1)
         output = output.view(
             batch_size, self._out_dim(0) * self._out_dim(1), -1
         ).transpose(1, 2)
-        output = output.contiguous().view(
+        output = output.view(
             batch_size, self.out_channels, self._out_dim(0), self._out_dim(1)
         )
 
