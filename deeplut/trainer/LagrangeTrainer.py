@@ -76,7 +76,7 @@ class LagrangeTrainer(BaseTrainer):
         if not hasattr(self.weight, "org"):
             self.weight.org = self.weight.data.clone()
         self._validate_input(input)
-        input = input.view(-1, self.k, 1)
+        input = self._binarize(input.view(-1, self.k, 1))
         input_truth_table = self._binarize(input * self.truth_table)
         if not self.input_expanded:
             input_truth_table *= -1
