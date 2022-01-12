@@ -65,6 +65,10 @@ class BaseTrainer(torch.nn.Linear):
             self.weight_mask = torch.zeros_like(self.weight)
             self.weight_mask[:, 0] = 1
 
+    def update_grad_expanded(self) -> None:
+        if not self.input_expanded:
+            self.weight.grad = self.weight.grad * self.weight_mask
+
     def set_initializer(self, initializer: BaseInitializer) -> None:
         self.initializer = initializer
 
