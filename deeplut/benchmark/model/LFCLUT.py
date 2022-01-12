@@ -47,15 +47,7 @@ class LFCLUT(nn.Module):
             ),
             nn.BatchNorm1d(256),
             nn.ReLU(),
-            dLinear(
-                256,
-                10,
-                k=k,
-                binary_calculations=True,
-                trainer_type=trainer,
-                mask_builder_type=mask_builder_type,
-                bias=False,
-                device=device,
-            ),
+            Linear(256, 10),
             nn.BatchNorm1d(10),
+            nn.LogSoftmax()
         )

@@ -64,6 +64,9 @@ class BaseTrainer(torch.nn.Linear):
         if not self.input_expanded:
             self.weight_mask = torch.zeros_like(self.weight)
             self.weight_mask[:, 0] = 1
+            self.weight.weight_mask = self.weight_mask
+        else:
+            self.weight.weight_mask = None
 
     def update_grad_expanded(self) -> None:
         if not self.input_expanded:

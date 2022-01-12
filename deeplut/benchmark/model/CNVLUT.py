@@ -42,4 +42,5 @@ class CNVLUT(nn.Module):
             nn.BatchNorm1d(512),
             nn.Linear(512, 10),
             nn.BatchNorm1d(10),
+            nn.LogSoftmax()
         )
