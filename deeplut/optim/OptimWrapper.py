@@ -28,6 +28,9 @@ class OptimWrapper:
         for p in list(self._get_params()):
             if hasattr(p, "org"):
                 p.org.copy_(p.data.clamp_(-1, 1))
+            if hasattr(p, "weight_mask") and p.weight_mask is not None:
+                # if input is not expanded we need to make sure grad is masked.
+                p.grad *= p.weight_mask
 
     def _get_params(self):
         return self.optimizer.param_groups[0]["params"]

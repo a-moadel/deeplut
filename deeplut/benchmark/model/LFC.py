@@ -21,4 +21,5 @@ class LFC(nn.Module):
             nn.ReLU(),
             Linear(256, 10),
             nn.BatchNorm1d(10),
+            nn.LogSoftmax()
         )
