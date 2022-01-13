@@ -41,7 +41,7 @@ class Conv2d(torch.nn.Module):
         bias: bool = True,
         padding_mode: str = "zeros",
         k: int = 2,
-        binary_calculations: bool = True,
+        binarization_level: int = 0,
         input_expanded: bool = True,
         input_dim: Union[int, tuple] = None,
         device: str = None,
@@ -68,7 +68,7 @@ class Conv2d(torch.nn.Module):
         self.trainer = trainer_type(
             tables_count=self.tables_count,
             k=k,
-            binary_calculations=binary_calculations,
+            binarization_level=binarization_level,
             input_expanded=input_expanded,
             device=device,
         )

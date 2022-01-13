@@ -11,7 +11,7 @@ class test_LagrangeTrainer(unittest.TestCase):
         lagrangeTrainer = LagrangeTrainer(
             tables_count=2,
             k=2,
-            binary_calculations=False,
+            binarization_level=0,
             input_expanded=True,
             device="cpu",
         )
@@ -31,7 +31,7 @@ class test_LagrangeTrainer(unittest.TestCase):
         lagrangeTrainer = LagrangeTrainer(
             tables_count=2,
             k=2,
-            binary_calculations=False,
+            binarization_level=0,
             input_expanded=True,
             device="cpu",
         )
@@ -54,7 +54,7 @@ class test_LagrangeTrainer(unittest.TestCase):
         lagrangeTrainer = LagrangeTrainer(
             tables_count=2,
             k=3,
-            binary_calculations=False,
+            binarization_level=0,
             input_expanded=True,
             device="cpu",
         )
@@ -80,7 +80,7 @@ class test_LagrangeTrainer(unittest.TestCase):
         lagrangeTrainer = LagrangeTrainer(
             tables_count=2,
             k=2,
-            binary_calculations=False,
+            binarization_level=0,
             input_expanded=False,
             device="cpu",
         )
@@ -120,7 +120,7 @@ class test_LagrangeTrainer(unittest.TestCase):
             lagrangeTrainer = LagrangeTrainer(
                 tables_count=table_count,
                 k=k,
-                binary_calculations=False,
+                binarization_level=0,
                 input_expanded=True,
                 device="cpu",
             )

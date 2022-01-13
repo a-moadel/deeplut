@@ -28,7 +28,7 @@ class test_Conv2d(unittest.TestCase):
             conv2d.trainer.weight.data
         )
         conv2d.trainer.weight[:, 0].data.copy_(torch_conv.weight.data.view(-1))
-        conv2d.trainer.set_binary_calculations(False)
+        conv2d.trainer.set_binarization_level(False)
         conv2d.trainer.set_input_expanded(False)
         dlut_output = conv2d(batch)
         self.assertEqual(dlut_output.shape, torch_output.shape)

@@ -74,7 +74,6 @@ def train(model, device, train_loader, optimizer):
         loss = F.cross_entropy(output, target)
         running_loss += loss.item()
         loss.backward()
-        model.update_grad_expanded()
         optimizer.step()
         train_losses.append(loss.item())
         batch_count += 1

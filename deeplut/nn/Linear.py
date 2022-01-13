@@ -22,7 +22,7 @@ class Linear(torch.nn.Module):
         in_features: int,
         out_features: int,
         k: int,
-        binary_calculations: bool,
+        binarization_level: int,
         input_expanded: bool,
         trainer_type: Type[BaseTrainer],
         mask_builder_type: Type[MaskBase],
@@ -43,7 +43,7 @@ class Linear(torch.nn.Module):
         self.trainer = trainer_type(
             tables_count=self.tables_count,
             k=k,
-            binary_calculations=binary_calculations,
+            binarization_level=binarization_level,
             input_expanded=input_expanded,
             device=device,
         )
