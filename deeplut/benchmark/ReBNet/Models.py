@@ -33,16 +33,18 @@ class CNV(nn.Module):
 
             nn.Flatten(),
 
-            BinaryConv2d(256, 512, bias=False),
+            BinaryLinear(256, 512, bias=False),
             nn.BatchNorm1d(512),
             ResidualSign(),
-            BinaryConv2d(512, 512, bias=False),
+            BinaryLinear(512, 512, bias=False),
             nn.BatchNorm1d(512),
             ResidualSign(),
-            BinaryConv2d(512, 10, bias=False),
+            BinaryLinear(512, 10, bias=False),
             nn.BatchNorm1d(10),
-            nn.LogSoftmax()
         )
+
+    def forward(self, x):
+        return self.layers(x)
 
 
 class LFC(nn.Module):
@@ -65,3 +67,6 @@ class LFC(nn.Module):
             BinaryLinear(256, 10, bias=False),
             nn.BatchNorm1d(10),
         )
+
+    def forward(self, x):
+        return self.layers(x)

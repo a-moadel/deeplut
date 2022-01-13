@@ -15,7 +15,7 @@ class LagrangeTrainer(BaseTrainer):
         self,
         tables_count: int,
         k: int,
-        binary_calculations: bool,
+        binarization_level: int,
         input_expanded: bool,
         device: Optional[str],
     ):
@@ -24,7 +24,7 @@ class LagrangeTrainer(BaseTrainer):
         Args:
             tables_count (int): Number of tables consumers need to train
             k (int): Number of inputs for each table.
-            binary_calculations (bool): Whether to force binary calculations - simulate real look up tabls -
+            binarization_level (int): which level of binarization is applied, 0 no binarization , 1 only weights binarized , 2 input also, and 3 output also binarized 
             input_expanded (bool): If set to True, means all LUT's inputs are considered during calculations , else only the first input will considered and the remaining will be masked.
             device (str): device of the output tensor.
         """
@@ -33,10 +33,14 @@ class LagrangeTrainer(BaseTrainer):
         super(LagrangeTrainer, self).__init__(
             tables_count=tables_count,
             k=k,
-            binary_calculations=binary_calculations,
+            binarization_level=binarization_level,
             input_expanded=input_expanded,
             device=device,
         )
+
+        self.WEIGHT_BIN_LEVEL = 1
+        self.INPUT_BIN_LEVEL = 2
+        self.OUTPUT_BIN_LEVEL = 3
 
     def _validate_input(self, input: torch.tensor):
         """validate inputs dim before passing throw LUTs
@@ -52,17 +56,19 @@ class LagrangeTrainer(BaseTrainer):
         if _rows_count % self.k != 0 or _tbl_count != self.tables_count:
             raise Exception("Invalid input dim")
 
-    def _binarize(self, input: torch.tensor) -> torch.tensor:
+    def _binarize(self, input: torch.tensor, binarization_level: int) -> torch.tensor:
         """binarize input to simulate real LUTs
 
         Args:
             input (torch.tensor): Nd tensor
 
         Returns:
-            [torch.tensor]: Same dimensions as input but all values either -1,1 in case binary_calculations = True.
+            [torch.tensor]: Same dimensions as input but all values either -1,1 in case binarization_level = 3.
         """
-        if self.binary_calculations:
-            input.data = torch.sign(input.data)
+        if self.binarization_level >= binarization_level:
+            _input = input.clone().clamp(-1, 1)
+            _input.data = torch.sign(_input.data)
+            return _input
         return input
 
     def forward(
@@ -71,31 +77,40 @@ class LagrangeTrainer(BaseTrainer):
         targets: torch.tensor = None,
         initalize: bool = False,
     ) -> torch.Tensor:
+
         if initalize and self.initializer is not None and targets is not None:
             self.initializer.update_counter(input, targets)
-        if not hasattr(self.weight, "org"):
+
+        if self.binarization_level and not hasattr(self.weight, "org"):
             self.weight.org = self.weight.data.clone()
+
         self._validate_input(input)
-        input = self._binarize(input.view(-1, self.k, 1))
-        input_truth_table = self._binarize(input * self.truth_table)
+        input_truth_table = self._binarize(self._binarize(
+            input.view(-1, self.k, 1), self.INPUT_BIN_LEVEL) * self.truth_table, self.INPUT_BIN_LEVEL)
+
         if not self.input_expanded:
             input_truth_table *= -1
-            reduced_table = self._binarize(input_truth_table[:, 0, :])
+            reduced_table = self._binarize(
+                input_truth_table[:, 0, :], self.INPUT_BIN_LEVEL)
         else:
-            input_truth_table = self._binarize(1 + input_truth_table)
-            reduced_table = self._binarize(input_truth_table.prod(dim=-2))
+            input_truth_table = self._binarize(
+                1 + input_truth_table, self.INPUT_BIN_LEVEL)
+            reduced_table = self._binarize(
+                input_truth_table.prod(dim=-2), self.INPUT_BIN_LEVEL)
+
         reduced_table = reduced_table.view(-1, self.tables_count, self.kk)
 
         if not self.input_expanded:
             out = reduced_table * self._binarize(
-                self.weight * self.weight_mask
+                self.weight * self.weight_mask, self.WEIGHT_BIN_LEVEL
             )
         else:
-            out = reduced_table * self._binarize(self.weight)
+            out = reduced_table * \
+                self._binarize(self.weight, self.WEIGHT_BIN_LEVEL)
 
-        out = self._binarize(out)
+        out = self._binarize(out, self.OUTPUT_BIN_LEVEL)
 
-        out = self._binarize(out.sum(-1))
+        out = self._binarize(out.sum(-1), self.OUTPUT_BIN_LEVEL)
 
         return out
 

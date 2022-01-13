@@ -14,7 +14,7 @@ def ReBNetTrainer(dataset, n_epochs, lr, binary_optim, device):
         model = LFC()
     else:
         model = CNV()
-
+    model.to(device)
     optimizer = OptimWrapper(optim.Adam(
         model.parameters(), lr=lr), BinaryOptim=binary_optim)
 

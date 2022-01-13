@@ -6,7 +6,7 @@ from typing import Optional
 class BaseTrainer(torch.nn.Linear):
     """This class is the base class for trainers. provide a consistent interface for different ways of tables approximation."""
 
-    binary_calculations: bool
+    binarization_level: int
     k: int
     kk: int
     input_expanded: bool
@@ -17,7 +17,7 @@ class BaseTrainer(torch.nn.Linear):
         self,
         tables_count: int,
         k: int,
-        binary_calculations: bool,
+        binarization_level: int,
         input_expanded: bool,
         device: Optional[str],
     ) -> None:
@@ -26,13 +26,13 @@ class BaseTrainer(torch.nn.Linear):
         Args:
             tables_count (int): Number of tables consumers need to train
             k (int): Number of inputs for each table.
-            binary_calculations (bool): Whether to force binary calculations - simulate real look up tabls -
+            binarization_level (int): which level of binarization is applied, 0 no binarization , 1 only weights binarized , 2 input also, and 3 output also binarized 
             input_expanded (bool): If set to True, means all LUT's inputs are considered during calculations , else only the first input will considered and the remaining will be masked.
             device (str): device of the output tensor.
         """
         self.k = k
         self.kk = 2 ** k
-        self.binary_calculations = binary_calculations
+        self.binarization_level = binarization_level
         self.input_expanded = input_expanded
         self.tables_count = tables_count
 
@@ -44,13 +44,13 @@ class BaseTrainer(torch.nn.Linear):
         )
         self.set_input_expanded(input_expanded)
 
-    def set_binary_calculations(self, binary_calculations: bool) -> None:
+    def set_binarization_level(self, binarization_level: int) -> None:
         """binary calculations
 
         Args:
-            binary_calculations (bool): boolean value of the new binary calculations.
+            binarization_level (int): which level of binarization is applied, 0 no binarization , 1 only weights binarized , 2 input also, and 3 output also binarized 
         """
-        self.binary_calculations = binary_calculations
+        self.binarization_level = binarization_level
 
     def set_input_expanded(self, input_expanded: bool) -> None:
         """Set the value for input expansion, either we use expanded input for not, using expanded input means we only consider first input for each lut.

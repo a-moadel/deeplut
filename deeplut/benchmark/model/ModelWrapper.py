@@ -17,11 +17,11 @@ class ModelWrapper(nn.Module):
     def is_binary_layer(self, layer):
         return isinstance(layer, BinaryConv2d) or isinstance(layer, BinaryLinear)
 
-    def set_trainer_paramters(self, input_expanded, binary_calculations):
+    def set_trainer_paramters(self, input_expanded, binarization_level):
         for layer in self._model.layers:
             if self.is_deep_lut_layer(layer):
                 layer.trainer.set_input_expanded(input_expanded)
-                layer.trainer.set_binary_calculations(binary_calculations)
+                layer.trainer.set_binarization_level(binarization_level)
 
     def binarize_weights(self):
         for layer in self._model.layers:
