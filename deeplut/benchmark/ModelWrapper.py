@@ -15,7 +15,9 @@ class ModelWrapper(nn.Module):
         return isinstance(layer, dLinear) or isinstance(layer, dConv2d)
 
     def is_binary_layer(self, layer):
-        return isinstance(layer, BinaryConv2d) or isinstance(layer, BinaryLinear)
+        return isinstance(layer, BinaryConv2d) or isinstance(
+            layer, BinaryLinear
+        )
 
     def set_trainer_paramters(self, input_expanded, binarization_level):
         for layer in self._model.layers:
@@ -29,7 +31,8 @@ class ModelWrapper(nn.Module):
                 layer.weight.data = torch.sign(layer.weight.data)
             elif self.is_deep_lut_layer(layer):
                 layer.trainer.weight.data = torch.sign(
-                    layer.trainer.weight.data)
+                    layer.trainer.weight.data
+                )
 
     def forward(
         self, x, targets: torch.Tensor = None, initalize: bool = False
