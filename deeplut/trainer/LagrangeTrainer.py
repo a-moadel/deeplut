@@ -24,7 +24,7 @@ class LagrangeTrainer(BaseTrainer):
         Args:
             tables_count (int): Number of tables consumers need to train
             k (int): Number of inputs for each table.
-            binarization_level (int): which level of binarization is applied, 0 no binarization , 1 only weights binarized , 2 input also, and 3 output also binarized 
+            binarization_level (int): which level of binarization is applied, 0 no binarization , 1 only weights binarized , 2 input also, and 3 output also binarized
             input_expanded (bool): If set to True, means all LUT's inputs are considered during calculations , else only the first input will considered and the remaining will be masked.
             device (str): device of the output tensor.
         """
@@ -56,7 +56,9 @@ class LagrangeTrainer(BaseTrainer):
         if _rows_count % self.k != 0 or _tbl_count != self.tables_count:
             raise Exception("Invalid input dim")
 
-    def _binarize(self, input: torch.tensor, binarization_level: int) -> torch.tensor:
+    def _binarize(
+        self, input: torch.tensor, binarization_level: int
+    ) -> torch.tensor:
         """binarize input to simulate real LUTs
 
         Args:
@@ -81,22 +83,28 @@ class LagrangeTrainer(BaseTrainer):
         if initalize and self.initializer is not None and targets is not None:
             self.initializer.update_counter(input, targets)
 
-        if self.binarization_level and not hasattr(self.weight, "org"):
+        if self.binarization_level > 0 and not hasattr(self.weight, "org"):
             self.weight.org = self.weight.data.clone()
 
         self._validate_input(input)
-        input_truth_table = self._binarize(self._binarize(
-            input.view(-1, self.k, 1), self.INPUT_BIN_LEVEL) * self.truth_table, self.INPUT_BIN_LEVEL)
+        input_truth_table = self._binarize(
+            self._binarize(input.view(-1, self.k, 1), self.INPUT_BIN_LEVEL)
+            * self.truth_table,
+            self.INPUT_BIN_LEVEL,
+        )
 
         if not self.input_expanded:
             input_truth_table *= -1
             reduced_table = self._binarize(
-                input_truth_table[:, 0, :], self.INPUT_BIN_LEVEL)
+                input_truth_table[:, 0, :], self.INPUT_BIN_LEVEL
+            )
         else:
             input_truth_table = self._binarize(
-                1 + input_truth_table, self.INPUT_BIN_LEVEL)
+                1 + input_truth_table, self.INPUT_BIN_LEVEL
+            )
             reduced_table = self._binarize(
-                input_truth_table.prod(dim=-2), self.INPUT_BIN_LEVEL)
+                input_truth_table.prod(dim=-2), self.INPUT_BIN_LEVEL
+            )
 
         reduced_table = reduced_table.view(-1, self.tables_count, self.kk)
 
@@ -105,8 +113,9 @@ class LagrangeTrainer(BaseTrainer):
                 self.weight * self.weight_mask, self.WEIGHT_BIN_LEVEL
             )
         else:
-            out = reduced_table * \
-                self._binarize(self.weight, self.WEIGHT_BIN_LEVEL)
+            out = reduced_table * self._binarize(
+                self.weight, self.WEIGHT_BIN_LEVEL
+            )
 
         out = self._binarize(out, self.OUTPUT_BIN_LEVEL)
 
