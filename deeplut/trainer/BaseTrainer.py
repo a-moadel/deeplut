@@ -26,7 +26,7 @@ class BaseTrainer(torch.nn.Linear):
         Args:
             tables_count (int): Number of tables consumers need to train
             k (int): Number of inputs for each table.
-            binarization_level (int): which level of binarization is applied, 0 no binarization , 1 only weights binarized , 2 input also, and 3 output also binarized 
+            binarization_level (int): which level of binarization is applied, 0 no binarization , 1 only weights binarized , 2 input also, and 3 output also binarized
             input_expanded (bool): If set to True, means all LUT's inputs are considered during calculations , else only the first input will considered and the remaining will be masked.
             device (str): device of the output tensor.
         """
@@ -48,7 +48,7 @@ class BaseTrainer(torch.nn.Linear):
         """binary calculations
 
         Args:
-            binarization_level (int): which level of binarization is applied, 0 no binarization , 1 only weights binarized , 2 input also, and 3 output also binarized 
+            binarization_level (int): which level of binarization is applied, 0 no binarization , 1 only weights binarized , 2 input also, and 3 output also binarized
         """
         self.binarization_level = binarization_level
 

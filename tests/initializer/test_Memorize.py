@@ -9,7 +9,7 @@ from deeplut.nn.utils import truth_table
 
 class test_Memorize(unittest.TestCase):
     def test_input_to_id_one_by_one(self):
-        trainer = LagrangeTrainer(1, 2, True, True, None)
+        trainer = LagrangeTrainer(1, 2, 3, True, None)
         memorize_initializer = Memorize(
             trainer.tables_count, trainer.k, trainer.kk, None
         )
@@ -23,7 +23,7 @@ class test_Memorize(unittest.TestCase):
             self.assertEqual(expected_id, int(actual_id.numpy()))
 
     def test_input_to_id_vectorized(self):
-        trainer = LagrangeTrainer(1, 2, True, True, None)
+        trainer = LagrangeTrainer(1, 2, 3, True, None)
         memorize_initializer = Memorize(
             trainer.tables_count, trainer.k, trainer.kk, None
         )
@@ -34,7 +34,7 @@ class test_Memorize(unittest.TestCase):
         self.assertEqual([0, 1, 2, 3], list(actual_id.numpy()))
 
     def test_input_to_id_vectorized_mutiple_tables(self):
-        trainer = LagrangeTrainer(1, 2, True, True, None)
+        trainer = LagrangeTrainer(1, 2, 3, True, None)
         memorize_initializer = Memorize(
             trainer.tables_count, trainer.k, trainer.kk, None
         )
@@ -48,7 +48,7 @@ class test_Memorize(unittest.TestCase):
         self.assertTrue((actual_id.numpy() == expected_id).all())
 
     def test_update_tables_weights(self):
-        trainer = LagrangeTrainer(1, 2, True, True, None)
+        trainer = LagrangeTrainer(1, 2, 3, True, None)
         memorize_initializer = Memorize(
             trainer.tables_count, trainer.k, trainer.kk, None
         )
@@ -66,7 +66,7 @@ class test_Memorize(unittest.TestCase):
         self.assertTrue((expected_output == actual_output).all())
 
     def test_update_tables_weights_can_not_decide_senario(self):
-        trainer = LagrangeTrainer(1, 2, True, True, None)
+        trainer = LagrangeTrainer(1, 2, 3, True, None)
         memorize_initializer = Memorize(
             trainer.tables_count, trainer.k, trainer.kk, None
         )
