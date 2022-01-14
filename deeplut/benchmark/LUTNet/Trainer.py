@@ -39,9 +39,11 @@ def LUTNetTrainer(
     )
     model_warpper.set_trainer_paramters(input_expanded, binarization_level)
     best_accuracy = 0
+    training_losses = []
     for epoch in range(n_epochs):
         start = timeit.default_timer()
         _, training_loss = train(model, device, train_loader, optimizer)
+        training_losses.append(training_loss)
         stop = timeit.default_timer()
         training_time = stop - start
         start = timeit.default_timer()
@@ -60,10 +62,10 @@ def LUTNetTrainer(
                 test_time,
             )
         )
-
+    return training_losses
 
 def create_phase(
-    phase_name, n_epochs, lr, binary_optim, binarization_level, input_expanded
+    phase_name, n_epochs, lr, binary_optim, binarization_level, input_expanded, load_path=None
 ):
     phase = type("", (), {})()
     phase.phase_name = phase_name
@@ -72,6 +74,7 @@ def create_phase(
     phase.binary_optim = binary_optim
     phase.binarization_level = binarization_level
     phase.input_expanded = input_expanded
+    phase.load_path = load_path
     return phase
 
 
@@ -88,4 +91,5 @@ def multi_phase_training(phases, dataset, model_warpper, device):
             phase.binarization_level,
             phase.input_expanded,
             device,
+            phase.load_path
         )
