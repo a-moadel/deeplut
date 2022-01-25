@@ -5,7 +5,7 @@ import torch.nn as nn
 
 
 class CNV(nn.Module):
-    def __init__(self):
+    def __init__(self, binary_training):
         super(CNV, self).__init__()
         self.layers = nn.Sequential(
             BinaryConv2d(3, 64, 3, bias=False),
@@ -38,13 +38,18 @@ class CNV(nn.Module):
             BinaryLinear(512, 10, bias=False),
             nn.BatchNorm1d(10),
         )
+        for layer in self.layers:
+            if isinstance(layer, BinaryLinear) or isinstance(
+                layer, BinaryConv2d
+            ):
+                layer.set_training_parameters(binary_training)
 
     def forward(self, x):
         return self.layers(x)
 
 
 class LFC(nn.Module):
-    def __init__(self):
+    def __init__(self, binary_training):
         super(LFC, self).__init__()
         self.layers = nn.Sequential(
             nn.Flatten(),
@@ -63,6 +68,11 @@ class LFC(nn.Module):
             BinaryLinear(256, 10, bias=False),
             nn.BatchNorm1d(10),
         )
+        for layer in self.layers:
+            if isinstance(layer, BinaryLinear) or isinstance(
+                layer, BinaryConv2d
+            ):
+                layer.set_training_parameters(binary_training)
 
     def forward(self, x):
         return self.layers(x)

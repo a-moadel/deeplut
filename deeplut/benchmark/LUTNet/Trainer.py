@@ -1,18 +1,27 @@
 from deeplut.benchmark.Utils import get_data_set, seed_everything, train, test
 from deeplut.benchmark.LUTNet.Models import LFC, CNV
+from deeplut.benchmark.ReBNet.Models import LFC as RLFC, CNV as RCNV
 import torch.optim as optim
 from deeplut.optim.OptimWrapper import OptimWrapper
 from deeplut.benchmark.ModelWrapper import ModelWrapper
 import timeit
 import torch
+import copy
 
 
-def get_model(dataset, k, mask_builder, device):
+def get_model(dataset, k, mask_builder, use_rebnet, binarization, device):
     model = None
     if dataset == "MNIST":
-        model = LFC(k, mask_builder, device)
+        if use_rebnet:
+            model = RLFC(binarization)
+        else:
+            model = LFC(k, mask_builder, device)
     else:
-        model = CNV(k, mask_builder, device)
+        if use_rebnet:
+            model = RCNV(binarization)
+        else:
+            model = CNV(k, mask_builder, device)
+
     model.to(device)
     model_warpper = ModelWrapper(model)
     return model, model_warpper
@@ -29,7 +38,7 @@ def LUTNetTrainer(
     input_expanded,
     device,
 ):
-    train_loader, test_loader = get_data_set(dataset)
+    train_loader, test_loader, _ = get_data_set(dataset)
     seed_everything()
 
     model = model_warpper._model
@@ -37,6 +46,7 @@ def LUTNetTrainer(
     optimizer = OptimWrapper(
         optim.Adam(model.parameters(), lr=lr), BinaryOptim=binary_optim
     )
+
     model_warpper.set_trainer_paramters(input_expanded, binarization_level)
     best_accuracy = 0
     training_losses = []
@@ -64,8 +74,17 @@ def LUTNetTrainer(
         )
     return training_losses
 
+
 def create_phase(
-    phase_name, n_epochs, lr, binary_optim, binarization_level, input_expanded, load_path=None
+    phase_name,
+    n_epochs,
+    lr,
+    binary_optim,
+    binarization_level,
+    input_expanded,
+    load_path=None,
+    use_rebnet=False,
+    model_warpper=None,
 ):
     phase = type("", (), {})()
     phase.phase_name = phase_name
@@ -75,21 +94,41 @@ def create_phase(
     phase.binarization_level = binarization_level
     phase.input_expanded = input_expanded
     phase.load_path = load_path
+    phase.use_rebnet = use_rebnet
+    phase.model_warpper = model_warpper
     return phase
 
 
-def multi_phase_training(phases, dataset, model_warpper, device):
+def multi_phase_training(phases, dataset, device):
     for phase in phases:
         print(":: START PHASE {}".format(phase.phase_name))
+        if phase.load_path is not None:
+            load_from_unexpanded_layer(phase.model_warpper, phase.load_path)
         LUTNetTrainer(
             phase.phase_name,
             dataset,
-            model_warpper,
+            phase.model_warpper,
             phase.n_epochs,
             phase.lr,
             phase.binary_optim,
             phase.binarization_level,
             phase.input_expanded,
             device,
-            phase.load_path
         )
+
+
+def load_data(target, src):
+    if target.shape == src.shape:
+        target.copy_(src)
+    else:
+        target[:, 0].copy_(src.view(-1))
+
+
+def load_from_unexpanded_layer(model, path):
+    pretrained_dict = torch.load(path)
+    for key in model.state_dict().keys():
+        _new_key = key.replace("trainer.", "")
+        if key in pretrained_dict:
+            load_data(model.state_dict()[key], pretrained_dict[key])
+        else:
+            load_data(model.state_dict()[key], pretrained_dict[_new_key])

@@ -1,9 +1,10 @@
 import torch
 from torch.functional import Tensor
+from deeplut.nn.BinarizeSign import BinarizeSign
 from deeplut.nn.utils import truth_table
 from deeplut.trainer.BaseTrainer import BaseTrainer
 from deeplut.initializer.Memorize import Memorize
-from typing import Optional, Type
+from typing import Optional
 
 
 class LagrangeTrainer(BaseTrainer):
@@ -37,10 +38,9 @@ class LagrangeTrainer(BaseTrainer):
             input_expanded=input_expanded,
             device=device,
         )
-
-        self.WEIGHT_BIN_LEVEL = 1
-        self.INPUT_BIN_LEVEL = 2
-        self.OUTPUT_BIN_LEVEL = 3
+        self.gamma = torch.nn.Parameter(
+            torch.tensor(1.0, requires_grad=True)
+        )  # scaling factor
 
     def _validate_input(self, input: torch.tensor):
         """validate inputs dim before passing throw LUTs
@@ -56,23 +56,6 @@ class LagrangeTrainer(BaseTrainer):
         if _rows_count % self.k != 0 or _tbl_count != self.tables_count:
             raise Exception("Invalid input dim")
 
-    def _binarize(
-        self, input: torch.tensor, binarization_level: int
-    ) -> torch.tensor:
-        """binarize input to simulate real LUTs
-
-        Args:
-            input (torch.tensor): Nd tensor
-
-        Returns:
-            [torch.tensor]: Same dimensions as input but all values either -1,1 in case binarization_level = 3.
-        """
-        if self.binarization_level >= binarization_level:
-            _input = input.clone().clamp(-1, 1)
-            _input.data = torch.sign(_input.data)
-            return _input
-        return input
-
     def forward(
         self,
         input: torch.tensor,
@@ -83,45 +66,27 @@ class LagrangeTrainer(BaseTrainer):
         if initalize and self.initializer is not None and targets is not None:
             self.initializer.update_counter(input, targets)
 
-        if self.binarization_level > 0 and not hasattr(self.weight, "org"):
-            self.weight.org = self.weight.data.clone()
-
         self._validate_input(input)
-        input_truth_table = self._binarize(
-            self._binarize(input.view(-1, self.k, 1), self.INPUT_BIN_LEVEL)
-            * self.truth_table,
-            self.INPUT_BIN_LEVEL,
-        )
+        input_truth_table = input.view(-1, self.k, 1) * self.truth_table
 
         if not self.input_expanded:
             input_truth_table *= -1
-            reduced_table = self._binarize(
-                input_truth_table[:, 0, :], self.INPUT_BIN_LEVEL
-            )
+            reduced_table = input_truth_table[:, 0, :]
         else:
-            input_truth_table = self._binarize(
-                1 + input_truth_table, self.INPUT_BIN_LEVEL
-            )
-            reduced_table = self._binarize(
-                input_truth_table.prod(dim=-2), self.INPUT_BIN_LEVEL
-            )
+            input_truth_table = 1 + input_truth_table
+            reduced_table = input_truth_table.prod(dim=-2)
 
         reduced_table = reduced_table.view(-1, self.tables_count, self.kk)
-
-        if not self.input_expanded:
-            out = reduced_table * self._binarize(
-                self.weight * self.weight_mask, self.WEIGHT_BIN_LEVEL
-            )
+        if self.binarization_level > 0:
+            _weight = BinarizeSign.apply(self.weight)
         else:
-            out = reduced_table * self._binarize(
-                self.weight, self.WEIGHT_BIN_LEVEL
-            )
+            _weight = self.weight
+        if not self.input_expanded:
+            _weight = _weight * self.weight_mask
 
-        out = self._binarize(out, self.OUTPUT_BIN_LEVEL)
+        out = reduced_table * _weight * self.gamma.abs()
 
-        out = self._binarize(out.sum(-1), self.OUTPUT_BIN_LEVEL)
-
-        return out
+        return out.sum(-1)
 
     # if we have more intitalizers , may be better we introduce builders for each base module , where we all the object creation logic should live.
     def set_memorize_as_initializer(self) -> None:

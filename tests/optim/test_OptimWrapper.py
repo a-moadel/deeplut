@@ -15,7 +15,7 @@ class TestOptimWrapper(unittest.TestCase):
         wrapper = OptimWrapper(optimizer)
         self.assertEqual(list(model.parameters()), wrapper._get_params())
 
-    def test_garad_is_masked(self):
+    def test_grad_is_masked(self):
         model = SimpleDLUTModel(2, 1)
         input = torch.rand(2, 2)
         optimizer = torch.optim.RMSprop(model.parameters(), lr=0.01)

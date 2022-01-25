@@ -82,3 +82,6 @@ class BaseTrainer(torch.nn.Linear):
     def update_initialized_weights(self):
         if self.initializer is not None:
             self.weight.data = self.initializer.update_luts_weights()
+
+    def update_memoization(self):
+        self.memorize

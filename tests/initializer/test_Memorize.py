@@ -61,7 +61,7 @@ class test_Memorize(unittest.TestCase):
         trainer.weight.data = memorize_initializer.update_luts_weights()
 
         actual_output = trainer(inputs).detach().cpu().flatten().numpy()
-        expected_output = np.array([-1, -1, 1, -1])
+        expected_output = np.array([-4, -4, 4, -4])
 
         self.assertTrue((expected_output == actual_output).all())
 
@@ -78,7 +78,7 @@ class test_Memorize(unittest.TestCase):
         trainer.weight.data = memorize_initializer.update_luts_weights()
 
         actual_output = trainer(inputs).detach().cpu().flatten().numpy()
-        expected_output = np.array([1, 1, 1, 1])
+        expected_output = np.array([4, 4, 4, 4])
 
         self.assertTrue((expected_output == actual_output).all())
 
