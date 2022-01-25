@@ -1,4 +1,3 @@
-from deeplut.nn.utils.truth_table import generate_truth_table
 from deeplut.initializer.BaseInitializer import BaseInitializer
 from typing import Dict, Optional
 import torch

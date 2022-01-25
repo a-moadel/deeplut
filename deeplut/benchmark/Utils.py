@@ -7,26 +7,28 @@ import numpy as np
 
 
 def get_data_set(dataset):
-
+    extra_dataset = None
     if dataset == "SVHN":
         kwargs = {"batch_size": 100}
         transform_train = transforms.Compose(
             [
-                transforms.RandomRotation(8),
-                transforms.RandomAffine(
-                    0, translate=(0.15, 0.15), shear=10, scale=(0.8, 1.2)
-                ),
                 transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                transforms.RandomAffine(0, translate=(0.15, 0.15)),
             ]
         )
 
         transform_test = transforms.Compose(
             [
                 transforms.ToTensor(),
+                transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
             ]
         )
         train_dataset = datasets.SVHN(
             "../data", split="train", download=True, transform=transform_train
+        )
+        extra_dataset = datasets.SVHN(
+            "../data", split="extra", download=True, transform=transform_train
         )
         test_dataset = datasets.SVHN(
             "../data", split="test", download=True, transform=transform_test
@@ -34,9 +36,7 @@ def get_data_set(dataset):
     elif dataset == "MNIST":
         kwargs = {"batch_size": 100}
         transform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-            ]
+            [transforms.ToTensor(), transforms.Normalize([0.5], [0.5])]
         )
         train_dataset = datasets.MNIST(
             "../data", train=True, download=True, transform=transform
@@ -48,14 +48,10 @@ def get_data_set(dataset):
         kwargs = {"batch_size": 100}
         transform_train = transforms.Compose(
             [
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomRotation(10),
-                transforms.RandomAffine(0, shear=10, scale=(0.8, 1.2)),
-                transforms.ColorJitter(
-                    brightness=0.2, contrast=0.2, saturation=0.2
-                ),
                 transforms.ToTensor(),
                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomAffine(0, translate=(0.15, 0.15)),
             ]
         )
 
@@ -73,12 +69,17 @@ def get_data_set(dataset):
         )
 
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, **kwargs, num_workers=3
+        train_dataset, **kwargs, num_workers=4, shuffle=True
     )
     test_loader = torch.utils.data.DataLoader(
-        test_dataset, **kwargs, num_workers=3
+        test_dataset, **kwargs, num_workers=4
     )
-    return train_loader, test_loader
+    if extra_dataset is not None:
+        extra_loader = torch.utils.data.DataLoader(
+            extra_dataset, **kwargs, num_workers=4, shuffle=True
+        )
+        return train_loader, test_loader, extra_loader
+    return train_loader, test_loader, None
 
 
 def train(model, device, train_loader, optimizer):
@@ -88,7 +89,7 @@ def train(model, device, train_loader, optimizer):
     batch_count = 0
     for _, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
-        optimizer.optimizer.zero_grad()
+        optimizer.zero_grad()
         output = model(data)
         loss = F.cross_entropy(output, target)
         running_loss += loss.item()

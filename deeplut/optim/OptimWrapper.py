@@ -48,3 +48,6 @@ class OptimWrapper:
 
         if self.BinaryOptim:
             self._post_step()
+
+    def zero_grad(self):
+        self.optimizer.zero_grad()

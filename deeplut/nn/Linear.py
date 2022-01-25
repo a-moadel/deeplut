@@ -47,6 +47,10 @@ class Linear(torch.nn.Module):
             input_expanded=input_expanded,
             device=device,
         )
+        # stdv = 1 / np.sqrt(self.in_features)
+        # w = np.random.normal(loc=0.0, scale=stdv, size=list(self.trainer.weight.shape)).astype(np.float32)
+        # self.trainer.weight = torch.nn.Parameter(
+        #    torch.tensor(w, requires_grad=True))
 
         self.bias = (
             torch.nn.Linear(1, out_features, device=device).bias
