@@ -40,6 +40,7 @@ def ReBNetTrainer(
         scheduler.step(testing_loss)
         if accuracy > best_accuracy:
             torch.save(model.state_dict(), "best_model_{}".format(phase_name))
+        torch.save(model.state_dict(), "last_model_{}".format(phase_name))
         stop = timeit.default_timer()
         test_time = stop - start
         print(

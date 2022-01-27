@@ -2,7 +2,6 @@ from deeplut.benchmark.Utils import get_data_set, seed_everything, train, test
 from deeplut.benchmark.LUTNet.Models import LFC, CNV
 from deeplut.benchmark.ReBNet.Models import LFC as RLFC, CNV as RCNV
 import torch.optim as optim
-from deeplut.optim.OptimWrapper import OptimWrapper
 from deeplut.benchmark.ModelWrapper import ModelWrapper
 import timeit
 import torch
@@ -33,7 +32,6 @@ def LUTNetTrainer(
     model_warpper,
     n_epochs,
     lr,
-    binary_optim,
     binarization_level,
     input_expanded,
     device,
@@ -43,10 +41,8 @@ def LUTNetTrainer(
 
     model = model_warpper._model
 
-    optimizer = OptimWrapper(
-        optim.Adam(model.parameters(), lr=lr), BinaryOptim=binary_optim
-    )
-
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, "min")
     model_warpper.set_trainer_paramters(input_expanded, binarization_level)
     best_accuracy = 0
     training_losses = []
@@ -58,6 +54,7 @@ def LUTNetTrainer(
         training_time = stop - start
         start = timeit.default_timer()
         accuracy, testing_loss = test(model, device, test_loader)
+        scheduler.step(testing_loss)
         if accuracy > best_accuracy:
             torch.save(model.state_dict(), "best_model_{}".format(phase_name))
         stop = timeit.default_timer()
@@ -79,7 +76,6 @@ def create_phase(
     phase_name,
     n_epochs,
     lr,
-    binary_optim,
     binarization_level,
     input_expanded,
     load_path=None,
@@ -90,7 +86,6 @@ def create_phase(
     phase.phase_name = phase_name
     phase.n_epochs = n_epochs
     phase.lr = lr
-    phase.binary_optim = binary_optim
     phase.binarization_level = binarization_level
     phase.input_expanded = input_expanded
     phase.load_path = load_path
@@ -103,14 +98,15 @@ def multi_phase_training(phases, dataset, device):
     for phase in phases:
         print(":: START PHASE {}".format(phase.phase_name))
         if phase.load_path is not None:
-            load_from_unexpanded_layer(phase.model_warpper, phase.load_path)
+            load_from_unexpanded_layer(
+                phase.model_warpper._model, phase.load_path
+            )
         LUTNetTrainer(
             phase.phase_name,
             dataset,
             phase.model_warpper,
             phase.n_epochs,
             phase.lr,
-            phase.binary_optim,
             phase.binarization_level,
             phase.input_expanded,
             device,
@@ -126,6 +122,13 @@ def load_data(target, src):
 
 def load_from_unexpanded_layer(model, path):
     pretrained_dict = torch.load(path)
+    new_dict = {}
+    for key in pretrained_dict.keys():
+        if "module." in key:
+            new_dict[key.replace("module.", "")] = pretrained_dict[key]
+        else:
+            new_dict[key] = pretrained_dict[key]
+    pretrained_dict = new_dict
     for key in model.state_dict().keys():
         _new_key = key.replace("trainer.", "")
         if key in pretrained_dict:

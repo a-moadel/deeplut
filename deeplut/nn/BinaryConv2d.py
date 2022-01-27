@@ -36,6 +36,7 @@ class BinaryConv2d(torch.nn.Conv2d):
                 self.groups,
             )
         else:
+            self.weight.data.clamp_(-1, 1)
             return nn.functional.conv2d(
                 input,
                 self.weight * self.gamma.abs(),
