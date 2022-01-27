@@ -24,6 +24,7 @@ class BinaryLinear(torch.nn.Linear):
                 self.bias,
             )
         else:
+            self.weight.data.clamp_(-1, 1)
             return F.linear(input, self.weight * self.gamma.abs(), self.bias)
 
     def set_training_parameters(self, binary_training):

@@ -5,8 +5,7 @@ class BinarizeSign(torch.autograd.Function):
     @staticmethod
     def forward(self, input):
         self.saved_for_backward = [input]
-        org = input.detach().clone()
-        return org.sign()
+        return input.sign()
 
     @staticmethod
     def backward(self, grad_output):
