@@ -46,7 +46,7 @@ def LUTNetTrainer(
     model_warpper.set_trainer_paramters(input_expanded, binarization_level)
     best_accuracy = 0
     training_losses = []
-    for epoch in range(n_epochs):
+    for epoch in range(1, n_epochs+1):
         start = timeit.default_timer()
         _, training_loss = train(model, device, train_loader, optimizer)
         training_losses.append(training_loss)
@@ -57,6 +57,8 @@ def LUTNetTrainer(
         scheduler.step(testing_loss)
         if accuracy > best_accuracy:
             torch.save(model.state_dict(), "best_model_{}".format(phase_name))
+        if epoch%10==0:
+            torch.save(model.state_dict(), "{}_{}".format(epoch, phase_name))
         stop = timeit.default_timer()
         test_time = stop - start
         print(
