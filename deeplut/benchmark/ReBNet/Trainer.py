@@ -25,7 +25,7 @@ def ReBNetTrainer(
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, "min")
     best_accuracy = 0
     training_losses = []
-    for epoch in range(1,n_epochs+1):
+    for epoch in range(1, n_epochs + 1):
         start = timeit.default_timer()
         _, training_loss = train(model, device, train_loader, optimizer)
         if extra_loader is not None:
@@ -39,7 +39,7 @@ def ReBNetTrainer(
         scheduler.step(testing_loss)
         if accuracy > best_accuracy:
             torch.save(model.state_dict(), "best_model_{}".format(phase_name))
-        if epoch%10==0:
+        if epoch % 10 == 0:
             torch.save(model.state_dict(), "{}_{}".format(epoch, phase_name))
         stop = timeit.default_timer()
         test_time = stop - start
