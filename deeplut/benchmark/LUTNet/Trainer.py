@@ -1,29 +1,10 @@
 from deeplut.benchmark.Utils import get_data_set, seed_everything, train, test
-from deeplut.benchmark.LUTNet.Models import LFC, CNV
-from deeplut.benchmark.ReBNet.Models import LFC as RLFC, CNV as RCNV
+
 import torch.optim as optim
-from deeplut.benchmark.ModelWrapper import ModelWrapper
 import timeit
 import torch
-import copy
-
-
-def get_model(dataset, k, mask_builder, use_rebnet, binarization, device):
-    model = None
-    if dataset == "MNIST":
-        if use_rebnet:
-            model = RLFC(binarization)
-        else:
-            model = LFC(k, mask_builder, device)
-    else:
-        if use_rebnet:
-            model = RCNV(binarization)
-        else:
-            model = CNV(k, mask_builder, device)
-
-    model.to(device)
-    model_warpper = ModelWrapper(model)
-    return model, model_warpper
+from deeplut.nn.BinaryConv2d import BinaryConv2d
+from deeplut.nn.BinaryLinear import BinaryLinear
 
 
 def LUTNetTrainer(
@@ -32,7 +13,7 @@ def LUTNetTrainer(
     model_warpper,
     n_epochs,
     lr,
-    binarization_level,
+    binary_training,
     input_expanded,
     device,
 ):
@@ -43,10 +24,17 @@ def LUTNetTrainer(
 
     optimizer = optim.Adam(model.parameters(), lr=lr)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, "min")
-    model_warpper.set_trainer_paramters(input_expanded, binarization_level)
+    if binary_training:
+        model_warpper.set_trainer_paramters(input_expanded, 1)
+    else:
+        model_warpper.set_trainer_paramters(input_expanded, -1)
+    for layer in model_warpper._model.layers:
+        if isinstance(layer, BinaryLinear) or isinstance(layer, BinaryConv2d):
+            layer.set_training_parameters(binary_training)
+
     best_accuracy = 0
     training_losses = []
-    for epoch in range(n_epochs):
+    for epoch in range(1, n_epochs + 1):
         start = timeit.default_timer()
         _, training_loss = train(model, device, train_loader, optimizer)
         training_losses.append(training_loss)
@@ -57,6 +45,8 @@ def LUTNetTrainer(
         scheduler.step(testing_loss)
         if accuracy > best_accuracy:
             torch.save(model.state_dict(), "best_model_{}".format(phase_name))
+        if epoch % 10 == 0:
+            torch.save(model.state_dict(), "{}_{}".format(epoch, phase_name))
         stop = timeit.default_timer()
         test_time = stop - start
         print(
@@ -76,7 +66,7 @@ def create_phase(
     phase_name,
     n_epochs,
     lr,
-    binarization_level,
+    binary_training,
     input_expanded,
     load_path=None,
     use_rebnet=False,
@@ -86,7 +76,7 @@ def create_phase(
     phase.phase_name = phase_name
     phase.n_epochs = n_epochs
     phase.lr = lr
-    phase.binarization_level = binarization_level
+    phase.binary_training = binary_training
     phase.input_expanded = input_expanded
     phase.load_path = load_path
     phase.use_rebnet = use_rebnet
@@ -107,7 +97,7 @@ def multi_phase_training(phases, dataset, device):
             phase.model_warpper,
             phase.n_epochs,
             phase.lr,
-            phase.binarization_level,
+            phase.binary_training,
             phase.input_expanded,
             device,
         )

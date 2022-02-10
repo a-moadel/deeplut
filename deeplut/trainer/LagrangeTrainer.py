@@ -68,6 +68,8 @@ class LagrangeTrainer(BaseTrainer):
 
         self._validate_input(input)
         input_truth_table = input.view(-1, self.k, 1) * self.truth_table
+        if self.binarization_level > 0:
+            input_truth_table.data = input_truth_table.data.sign()
 
         if not self.input_expanded:
             input_truth_table *= -1

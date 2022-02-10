@@ -9,7 +9,7 @@ import numpy as np
 def get_data_set(dataset):
     extra_dataset = None
     if dataset == "SVHN":
-        kwargs = {"batch_size": 100}
+        kwargs = {"batch_size": 50}
         transform_train = transforms.Compose(
             [
                 transforms.ToTensor(),
@@ -25,13 +25,13 @@ def get_data_set(dataset):
             ]
         )
         train_dataset = datasets.SVHN(
-            "../data", split="train", download=True, transform=transform_train
+            "data", split="train", download=True, transform=transform_train
         )
         extra_dataset = datasets.SVHN(
-            "../data", split="extra", download=True, transform=transform_train
+            "data", split="extra", download=True, transform=transform_train
         )
         test_dataset = datasets.SVHN(
-            "../data", split="test", download=True, transform=transform_test
+            "data", split="test", download=True, transform=transform_test
         )
     elif dataset == "MNIST":
         kwargs = {"batch_size": 100}
@@ -39,13 +39,13 @@ def get_data_set(dataset):
             [transforms.ToTensor(), transforms.Normalize([0.5], [0.5])]
         )
         train_dataset = datasets.MNIST(
-            "../data", train=True, download=True, transform=transform
+            "data", train=True, download=True, transform=transform
         )
         test_dataset = datasets.MNIST(
-            "../data", train=False, download=True, transform=transform
+            "data", train=False, download=True, transform=transform
         )
     elif dataset == "CIFAR10":
-        kwargs = {"batch_size": 100}
+        kwargs = {"batch_size": 50}
         transform_train = transforms.Compose(
             [
                 transforms.ToTensor(),
@@ -62,10 +62,10 @@ def get_data_set(dataset):
             ]
         )
         train_dataset = datasets.CIFAR10(
-            "../data", train=True, download=True, transform=transform_train
+            "data", train=True, download=True, transform=transform_train
         )
         test_dataset = datasets.CIFAR10(
-            "../data", train=False, download=True, transform=transform_test
+            "data", train=False, download=True, transform=transform_test
         )
 
     train_loader = torch.utils.data.DataLoader(
