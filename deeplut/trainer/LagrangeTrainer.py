@@ -75,7 +75,7 @@ class LagrangeTrainer(BaseTrainer):
             input_truth_table *= -1
             reduced_table = input_truth_table[:, 0, :]
         else:
-            input_truth_table = (1 + input_truth_table) / 2
+            input_truth_table = 1 + input_truth_table
             reduced_table = input_truth_table.prod(dim=-2)
 
         reduced_table = reduced_table.view(-1, self.tables_count, self.kk)
